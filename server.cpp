@@ -1,3 +1,5 @@
+// Тестовый коммент
+
 #include "server.h"
 
 _server::_server(_graphics *graphic)
