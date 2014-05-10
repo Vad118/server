@@ -6,7 +6,7 @@
 
 using namespace std;
 //COMMAND_SIZE МОЖНО ИЗБЕЖАТЬ, СМ strspn
-enum{STR_SIZE=256,COMMAND_SIZE=3,ARBITER_ID_SIZE=10,TOTAL_CLIENTS=100,MY_PORT=7500};
+enum{STR_SIZE=256,COMMAND_SIZE=3,ARBITER_ID_SIZE=10,TOTAL_CLIENTS=100,MY_PORT=7500,MONITORING_PORT=7501};
 
 
 struct dispatcher_answer
@@ -43,6 +43,7 @@ public:
     {
         int worker_addr;
         SOCKET clientSocket;
+        SOCKET clietnMonitoringSocket;
         char arbiters[STR_SIZE];
         int arbiters_count;
     }table[TOTAL_CLIENTS];

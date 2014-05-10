@@ -10,6 +10,8 @@
 #include <windows.h>
 #include "dispatcher.h"
 #include "graphics.h"
+#include "monitoringsocket.h"
+#include "monitoring.h"
 
 #include <string>
 #include <iostream>
@@ -25,6 +27,7 @@ private:
     WSADATA WsaData;
     int idclient;
     _graphics *graphics;
+    MonitoringSocket *monitoring;
 public:
     _server(_graphics *graphic);
     int initialize();

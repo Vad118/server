@@ -7,8 +7,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
     {
         ui->setupUi(this);
-        graphics=new _graphics(ui->textEdit);
+        graphics=new _graphics(ui->textEdit,ui->graphicsView->width()-10,ui->graphicsView->height()-10);
+        ui->graphicsView->setScene(graphics->PalletScene);
         server=new _server(graphics);
+        monitoring=new Monitoring();
         main_serv_init();
     }
 

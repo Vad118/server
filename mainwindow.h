@@ -17,8 +17,6 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
-
     void on_SendButton_clicked();
 
 private:
@@ -26,6 +24,7 @@ private:
 
     _graphics *graphics;
     _server *server;
+    _monitoring *monitoring;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 

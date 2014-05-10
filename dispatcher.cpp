@@ -61,6 +61,7 @@ dispatcher_answer dispatcher::addWorker(int worker_id, SOCKET clientSocket)
     //*Добавление
     table[nclients].worker_addr=worker_id;
     table[nclients].clientSocket=clientSocket;
+    table[nclients].clietnMonitoringSocket=NULL;
     strcpy(table[nclients].arbiters,"|");
     table[nclients].arbiters_count=0;
     nclients++;

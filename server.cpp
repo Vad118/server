@@ -1,5 +1,3 @@
-// Тестовый коммент
-
 #include "server.h"
 
 _server::_server(_graphics *graphic)
@@ -149,6 +147,8 @@ void _server::clientDisconnected(int client_id)
 {
     SOCKET clientSocket=disp->table[client_id].clientSocket;
     closesocket(clientSocket);
+    if(disp->table[client_id].clietnMonitoringSocket!=NULL)
+        closesocket(disp->table[client_id].clietnMonitoringSocket);
     //После удаления если был удалён не последний клиент то т.к.
     //Число эл-в в массиве уменьшается на 1, берём последний эл-т из массива и заносим
     //На позицию удалённого

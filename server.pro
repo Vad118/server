@@ -16,12 +16,20 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     dispatcher.cpp \
     server.cpp \
-    graphics.cpp
+    graphics.cpp \
+    monitoring.cpp \
+    monitoringsocket.cpp \
+    tracer.cpp
 
 HEADERS  += mainwindow.h \
     dispatcher.h \
     server.h \
-    graphics.h
+    graphics.h \
+    monitoring.h \
+    monitoringsocket.h \
+    tracer.h
+
 
 FORMS    += mainwindow.ui
 LIBS     += -lws2_32
+
