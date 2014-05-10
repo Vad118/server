@@ -43,7 +43,7 @@ public:
     {
         int worker_addr;
         SOCKET clientSocket;
-        SOCKET clietnMonitoringSocket;
+        SOCKET clientMonitoringSocket;
         char arbiters[STR_SIZE];
         int arbiters_count;
     }table[TOTAL_CLIENTS];

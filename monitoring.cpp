@@ -1,26 +1,29 @@
 #include "monitoring.h"
 
-Monitoring::Monitoring(dispatcher *disp_obj,graphics *graphic)
+Monitoring::Monitoring(dispatcher *disp_obj, _graphics *graphic)
 {
     disp=disp_obj;
-    graphicsObj=graphic;
+    graphicObj=graphic;
+    nclients=0;//TEST
 }
 
-void show()
+void Monitoring::show()
 {
     getClientsList();
     showClients();
-    showArbiters();
+    //showArbiters();
 }
 
 void Monitoring::getClientsList()
 {
-    clientsList.clear();
+    //nclients=disp->nclients;
+    nclients++;//TEST
     for(int i=0;i<disp->nclients;i++)
     {
         clientObj _clientObj;
-        _clientObj.worker_addr=disp->dispatcher_table[i]->worker_addr;
-        clientsList->push_back(_clientObj);
+        //_clientObj.worker_addr=disp->table[i].worker_addr;
+        _clientObj.worker_addr=i; // TEST
+        clientsList[i]=_clientObj;
     }
 }
 
@@ -28,22 +31,23 @@ void Monitoring::showClients()
 {
     graphicObj->clear();
     calculateCoordinates();
-    for(int i=0;i<clientsList->size();i++)
+    for(int i=0;i<nclients;i++)
     {
-        string text=clientsList[i].worker_addr;
+        char* text;
+        itoa(clientsList[i].worker_addr,text,10);
         graphicObj->paintClient(clientsList[i].position_x,clientsList[i].position_y,text);
     }
 }
 
 void Monitoring::calculateCoordinates()
 {
-    float step=(graphicObj->getWidth()-CLIENT_RECT_WIDTH*2)/clientsList->size();
+    float step=(graphicObj->getWidth()-CLIENT_RECT_WIDTH*2)/nclients;
     int position_x=0;
     int position_y=40;
-    for(int i=0;i<clientsList->size();i++)
+    for(int i=0;i<nclients;i++)
     {
         position_x+=step;
         clientsList[i].position_x=position_x;
-        clientsList[i].position_y=position_x;
+        clientsList[i].position_y=position_y;
     }
 }

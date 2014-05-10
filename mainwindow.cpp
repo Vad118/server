@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
         graphics=new _graphics(ui->textEdit,ui->graphicsView->width()-10,ui->graphicsView->height()-10);
         ui->graphicsView->setScene(graphics->PalletScene);
         server=new _server(graphics);
-        monitoring=new Monitoring();
+        dispatcher *dsp=new dispatcher(); // TEST
+        monitoring=new Monitoring(dsp,graphics);
         main_serv_init();
     }
 
@@ -46,4 +47,9 @@ void MainWindow::main_serv_send()
 void MainWindow::on_SendButton_clicked()
 {
     main_serv_send();
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    monitoring->show();
 }

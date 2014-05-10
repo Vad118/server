@@ -2,8 +2,10 @@
 #define MONITORING_H
 
 #include <vector>
+#include "server.h"
 #include "dispatcher.h"
 #include "graphics.h"
+
 
 struct clientObj
 {
@@ -14,15 +16,16 @@ struct clientObj
 
 class Monitoring
 {
-    vector<client_obj> *clientsList;
+    clientObj clientsList[TOTAL_CLIENTS];
     dispatcher *disp;
-    graphics *graphicObj;
+    _graphics *graphicObj;
+    int nclients;
     void getClientsList(); // Получаем список клиентов, заполняем clientsList
     void showClients();
     void showArbiters();
     void calculateCoordinates();
 public:
-    Monitoring(dispatcher *disp_obj,graphics *graphic);
+    Monitoring(dispatcher *disp_obj,_graphics *graphic);
     void show();
 };
 

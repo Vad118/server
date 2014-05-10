@@ -5,8 +5,9 @@ MonitoringSocket::MonitoringSocket(dispatcher *disp_par)
     disp=disp_par;
 }
 
-int MonitoringSocket::init(int port)
+int MonitoringSocket::initialize(int port)
 {
+    int ret=0;
     //++++++++++Создание сокета++++++
     if (WSAStartup(0x0202, &WsaData))
     {
@@ -52,22 +53,22 @@ void MonitoringSocket::checkForNewClients()
     {
         FD_ZERO(&readfds);
         //Заносим дескриптор сокета в readfds
-        FD_SET(ServerSocket,&readfds);
+        FD_SET(monitorSocket,&readfds);
         //Последний параметр - время ожидания. Выставляем нули чтобы
         //Select не блокировал выполнение программы до смены состояния сокета
         select(NULL,&readfds,NULL,NULL,&tv);
         //Если пришли данные на чтение то читаем
         SOCKET clientSocket;
         char buf[STR_SIZE];
-        if(FD_ISSET(ServerSocket,&readfds))
+        if(FD_ISSET(monitorSocket,&readfds))
         {
-            if(clientSocket = accept(ServerSocket, 0,0))
+            if(clientSocket = accept(monitorSocket, 0,0))
             {
                 int b=recv(clientSocket,buf,STR_SIZE,0);
                 char srv_resp[STR_SIZE];
                 int client_id;
                 // ТУТ ПАРСИНГ HANDSHAKE от клиента
-                disp->dispatcher_table[client_id].clietnMonitoringSocket=clientSocket;
+                disp->table[client_id].clientMonitoringSocket=clientSocket;
 
                 /* Тут ответ клиенту. Ниже пример из сервера
                 _itoa(client_id,srv_resp,10);

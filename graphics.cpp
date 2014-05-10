@@ -20,14 +20,14 @@ void _graphics::TextEditAppend(const char *str)
     textEdit->append(str);
 }
 
-void _graphics::paintClient(int x, int y, string text)
+void _graphics::paintClient(int x, int y, char* text)
 {
     QBrush br(Qt::green);
     QPen pen(Qt::black);
     PalletScene->addRect(x,y,CLIENT_RECT_WIDTH,CLIENT_RECT_HEIGHT,pen, br);
 }
 
-void _graphics::paintArbiter(int x, int y, string text)
+void _graphics::paintArbiter(int x, int y, char* text)
 {
     QBrush br(Qt::red);
     QPen pen(Qt::black);

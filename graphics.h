@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QtWidgets/QTextEdit>
 #include <QPainter>
+#include <string>
 
 enum{CLIENT_RECT_WIDTH=50,CLIENT_RECT_HEIGHT=20,ACTOR_CIRCLE_RADIUS=25};
 
@@ -16,8 +17,8 @@ public:
     _graphics(QTextEdit *edit,int width, int height);
     ~_graphics();
     void TextEditAppend(const char *str);
-    void paintClient(int x, int y, int width, int height, string text);
-    void paintArbiter(int x, int y, int r, string text);
+    void paintClient(int x, int y, char* text);
+    void paintArbiter(int x, int y, char* text);
     int getHeight(){return height;}
     int getWidth(){return width;}
     void clear();

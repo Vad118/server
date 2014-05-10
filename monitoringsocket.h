@@ -7,6 +7,14 @@
 #ifndef MONITORINGSOCKET_H
 #define MONITORINGSOCKET_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <iostream>
+#include <winsock2.h>
+#include <windows.h>
+#include "dispatcher.h"
+
 class MonitoringSocket
 {
     dispatcher *disp;
