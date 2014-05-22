@@ -7,12 +7,15 @@ Monitoring::Monitoring(dispatcher *disp_obj, _graphics *graphic)
     nclients=0;//TEST
 }
 
-void Monitoring::show()
+void Monitoring::getClientsArray()
 {
     getClientsList();
-    showClients();
+    calculateCoordinates();
+    //return clientsList;
+    //Если включен мониторинг
     //showArbiters();
 }
+
 
 void Monitoring::getClientsList()
 {
@@ -22,20 +25,10 @@ void Monitoring::getClientsList()
     {
         clientObj _clientObj;
         //_clientObj.worker_addr=disp->table[i].worker_addr;
-        _clientObj.worker_addr=i; // TEST
+        char* tmp;
+        itoa(i,tmp,10);
+        _clientObj.worker_addr=tmp; // TEST
         clientsList[i]=_clientObj;
-    }
-}
-
-void Monitoring::showClients()
-{
-    graphicObj->clear();
-    calculateCoordinates();
-    for(int i=0;i<nclients;i++)
-    {
-        char* text;
-        itoa(clientsList[i].worker_addr,text,10);
-        graphicObj->paintClient(clientsList[i].position_x,clientsList[i].position_y,text);
     }
 }
 

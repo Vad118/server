@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QtConcurrent/QtConcurrent>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,10 +10,17 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->setupUi(this);
         graphics=new _graphics(ui->textEdit,ui->graphicsView->width()-10,ui->graphicsView->height()-10);
         ui->graphicsView->setScene(graphics->PalletScene);
-        server=new _server(graphics);
         dispatcher *dsp=new dispatcher(); // TEST
         monitoring=new Monitoring(dsp,graphics);
+        server=new _server(graphics, monitoring);
         main_serv_init();
+
+        QThread workerThread;
+        MultiThreadServerPart *multiThreadServPart=new MultiThreadServerPart();
+        multiThreadServPart->init(server);
+        QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()),Qt::DirectConnection);
+        QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)),Qt::DirectConnection);
+        multiThreadServPart->start();
     }
 
 MainWindow::~MainWindow()
@@ -41,7 +49,7 @@ void MainWindow::main_serv_send()
 {
     server->clearArbiters();
     server->sendScriptToClients();
-    server->work_cycle(received_answer,answer);
+    server->work_cycle();
 }
 
 void MainWindow::on_SendButton_clicked()
@@ -51,5 +59,5 @@ void MainWindow::on_SendButton_clicked()
 
 void MainWindow::on_pushButton_clicked()
 {
-    monitoring->show();
+    //monitoring->show();
 }

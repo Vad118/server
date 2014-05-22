@@ -34,4 +34,6 @@ private:
     void main_serv_send();
 };
 
+
+
 #endif // MAINWINDOW_H

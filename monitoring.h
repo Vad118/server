@@ -2,31 +2,33 @@
 #define MONITORING_H
 
 #include <vector>
-#include "server.h"
+#include <iostream>
 #include "dispatcher.h"
 #include "graphics.h"
 
+using namespace std;
 
 struct clientObj
 {
-    int worker_addr;
+    string worker_addr;
     int position_x;
     int position_y;
 };
 
-class Monitoring
+class Monitoring:public QObject
 {
-    clientObj clientsList[TOTAL_CLIENTS];
+    Q_OBJECT
     dispatcher *disp;
     _graphics *graphicObj;
-    int nclients;
     void getClientsList(); // Получаем список клиентов, заполняем clientsList
-    void showClients();
     void showArbiters();
     void calculateCoordinates();
 public:
+    int nclients;
+    clientObj clientsList[TOTAL_CLIENTS];
+
     Monitoring(dispatcher *disp_obj,_graphics *graphic);
-    void show();
+    void getClientsArray();
 };
 
 #endif // MONITORING_H

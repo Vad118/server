@@ -1,8 +1,9 @@
 #include "server.h"
 
-_server::_server(_graphics *graphic)
+_server::_server(_graphics *graphics, Monitoring *monitoring)
 {
-    graphics=graphic;
+    this->graphics=graphics;
+    this->monitoring=monitoring;
 }
 
 int _server::initialize()
@@ -32,6 +33,9 @@ int _server::initialize()
     //Помечаем сокет как прослушивающий. 5- стандатрное значение очереди
     if(listen(ServerSocket,5))
        ret=4;
+    // Запускаем в отдельном потоке подключение новых клиентов
+    //checkForNewClients();
+
     return ret;
 
 
@@ -50,57 +54,6 @@ void _server::stop()
 {
     closesocket(ServerSocket);
     WSACleanup();
-}
-
-void _server::checkForNewClients()
-{
-    //для select
-    fd_set readfds;
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    //+++++++++++++++++++++++++++++++
-    //Проверяем подключение нового клиента
-    //Очищаем readfds
-    bool quit=false;
-    while(!quit)
-    {
-        FD_ZERO(&readfds);
-        //Заносим дескриптор сокета в readfds
-        FD_SET(ServerSocket,&readfds);
-        //Последний параметр - время ожидания. Выставляем нули чтобы
-        //Select не блокировал выполнение программы до смены состояния сокета
-        select(NULL,&readfds,NULL,NULL,&tv);
-        //Если пришли данные на чтение то читаем
-        SOCKET clientSocket;
-        char buf[STR_SIZE];
-        if(FD_ISSET(ServerSocket,&readfds))
-        {
-            if(clientSocket = accept(ServerSocket, 0,0))
-            {
-                int b=recv(clientSocket,buf,STR_SIZE,0);
-                //ЗДЕСЬ МОЖЕТ БЫТЬ КОПИРОВАНИЕ ip КЛИЕНТА
-                char srv_resp[STR_SIZE];
-                _itoa(idclient,srv_resp,10);
-                srv_resp[strlen(srv_resp)]='\0';
-                //sprintf(srv_resp,"%d",idclient);
-                send(clientSocket, srv_resp, STR_SIZE, 0);
-                disp->addWorker(idclient,clientSocket);
-                idclient++;
-                showClients();
-            }
-        }
-        else
-            quit=true;
-    }
-}
-
-void _server::showClients()
-{
-    char *str;
-    itoa(getTotalClients(),str,10);
-    graphics->TextEditAppend(str);
-    delete str;
 }
 
 dispatcher_answer _server::receiveMessage(int client_id)
@@ -250,7 +203,7 @@ void _server::sendScriptToClients()
 {
     // Раньше назывался getInput И было считывание SEND и QUIT из консоли
     // Теперь это первоначальная рассылка скрипта
-    checkForNewClients();
+    //checkForNewClients();
     if(getTotalClients()>0)
     {
         //Формируем структуру
@@ -275,12 +228,13 @@ void _server::sendScriptToClients()
 }
 
 
-void _server::work_cycle(dispatcher_answer received_answer, dispatcher_answer answer)
+void _server::work_cycle()
 {
+      dispatcher_answer received_answer,answer;
       bool finished=false;
       while (!finished)
       {
-           checkForNewClients();
+           //checkForNewClients();
            //+++++++++
            //Читаем текущих клиентов
            for(int i=0;i<getTotalClients();i++)
@@ -310,9 +264,84 @@ stop();
 }
 
 
-
-
-
 //---------------------------------------------------------------------------
 
+void MultiThreadServerPart::run()
+{
+    /*int x=10;
+    int y=10;
+    char* str="aaa";
+    emit show(x,y,str);*/
+    checkForNewClients();
+}
+
+void MultiThreadServerPart::init(_server *server)
+{
+    this->server=server;
+}
+
+void MultiThreadServerPart::checkForNewClients()
+{
+
+    //для select
+    fd_set readfds;
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    QMutex mutex;
+    //+++++++++++++++++++++++++++++++
+    //Проверяем подключение нового клиента
+    //Очищаем readfds
+    bool quit=false;
+    while(1)
+    {
+        FD_ZERO(&readfds);
+        //Заносим дескриптор сокета в readfds
+        FD_SET(server->ServerSocket,&readfds);
+        //Последний параметр - время ожидания. Выставляем нули чтобы
+        //Select не блокировал выполнение программы до смены состояния сокета
+        select(NULL,&readfds,NULL,NULL,&tv);
+        //Если пришли данные на чтение то читаем
+        SOCKET clientSocket;
+        char buf[STR_SIZE];
+        if(FD_ISSET(server->ServerSocket,&readfds))
+        {
+            if(clientSocket = accept(server->ServerSocket, 0,0))
+            {
+                int b=recv(clientSocket,buf,STR_SIZE,0);
+                if(b!=-1)
+                {
+                    //ЗДЕСЬ МОЖЕТ БЫТЬ КОПИРОВАНИЕ ip КЛИЕНТА
+                    char srv_resp[STR_SIZE];
+                    mutex.lock();
+                    _itoa(server->idclient,srv_resp,10);
+                    srv_resp[strlen(srv_resp)]='\0';
+                    //sprintf(srv_resp,"%d",idclient);
+                    send(clientSocket, srv_resp, STR_SIZE, 0);
+                    server->disp->addWorker(server->idclient,clientSocket);
+                    server->idclient++;
+                    showClients();
+                    mutex.unlock();
+                }
+            }
+        }
+    }
+}
+
+void MultiThreadServerPart::showClients()
+{
+    char *str="1";
+    //itoa(server->getTotalClients(),str,10);
+    server->graphics->TextEditAppend(str);
+    // Сделать через возрващение массива
+    server->monitoring->getClientsArray();
+    emit graphicsClear();
+    for(int i=0;i<server->monitoring->nclients;i++)
+    {
+        //char * tmp=server->monitoring->clientsList[i].worker_addr.c_str();
+        char *tmp="test";
+        emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,tmp);
+    }
+    delete str;
+}
 
