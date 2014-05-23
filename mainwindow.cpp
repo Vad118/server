@@ -12,14 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->graphicsView->setScene(graphics->PalletScene);
         dispatcher *dsp=new dispatcher(); // TEST
         monitoring=new Monitoring(dsp,graphics);
-        server=new _server(graphics, monitoring);
+        server=new _server(graphics, monitoring,dsp);
         main_serv_init();
 
         QThread workerThread;
         MultiThreadServerPart *multiThreadServPart=new MultiThreadServerPart();
         multiThreadServPart->init(server);
-        QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()),Qt::DirectConnection);
-        QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)),Qt::DirectConnection);
+        QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
+        QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         multiThreadServPart->start();
     }
 

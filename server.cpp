@@ -1,15 +1,15 @@
 #include "server.h"
 
-_server::_server(_graphics *graphics, Monitoring *monitoring)
+_server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp)
 {
     this->graphics=graphics;
     this->monitoring=monitoring;
+    this->disp=disp;
 }
 
 int _server::initialize()
 {
     int ret=0;
-    disp=new dispatcher();
     disp->nclients=0;
     idclient=0;
     //++++++++++Создание сокета++++++
@@ -330,18 +330,14 @@ void MultiThreadServerPart::checkForNewClients()
 
 void MultiThreadServerPart::showClients()
 {
-    char *str="1";
     //itoa(server->getTotalClients(),str,10);
-    server->graphics->TextEditAppend(str);
+    //server->graphics->TextEditAppend(str);
     // Сделать через возрващение массива
     server->monitoring->getClientsArray();
     emit graphicsClear();
-    for(int i=0;i<server->monitoring->nclients;i++)
+    for(int i=0;i<server->disp->nclients;i++)
     {
-        //char * tmp=server->monitoring->clientsList[i].worker_addr.c_str();
-        char *tmp="test";
-        emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,tmp);
+        emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,server->monitoring->clientsList[i].worker_addr);
     }
-    delete str;
 }
 

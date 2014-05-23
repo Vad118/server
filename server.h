@@ -35,7 +35,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocket;
 public:
-    _server(_graphics *graphics, Monitoring *monitoring);
+    _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp);
     int initialize();
     void stop();
     dispatcher_answer receiveMessage(int client_id);

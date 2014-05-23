@@ -10,7 +10,7 @@ using namespace std;
 
 struct clientObj
 {
-    string worker_addr;
+    char worker_addr[STR_SIZE];
     int position_x;
     int position_y;
 };
@@ -24,7 +24,6 @@ class Monitoring:public QObject
     void showArbiters();
     void calculateCoordinates();
 public:
-    int nclients;
     clientObj clientsList[TOTAL_CLIENTS];
 
     Monitoring(dispatcher *disp_obj,_graphics *graphic);
