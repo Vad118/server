@@ -21,17 +21,25 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_pushButton_3_clicked();
+
 private:
     Ui::MainWindow *ui;
 
+    dispatcher *dsp;
     _graphics *graphics;
     _server *server;
     Monitoring *monitoring;
+    MonitoringSocket *monitoringSocketObj;
+    MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 
     void main_serv_init();
+    void monitoring_serv_init();
     void main_serv_send();
+
+    void TEST_GENERATE_DSP_TABLE();
 };
 
 

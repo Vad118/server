@@ -23,8 +23,9 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-class _server
+class _server:public QObject
 {
+    Q_OBJECT
 friend class MultiThreadServerPart;
 private:
     dispatcher *disp;
@@ -35,7 +36,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocket;
 public:
-    _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp);
+    _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
     int initialize();
     void stop();
     dispatcher_answer receiveMessage(int client_id);
@@ -49,6 +50,12 @@ public:
     void showAnswer(dispatcher_answer received_answer, bool final=true);
     void sendScriptToClients();
     void work_cycle();
+    void echo();
+    void showClients();
+signals:
+    void showClientSignal(int x,int y,char* str);
+    void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
+    void graphicsClear();
 
 };
 
@@ -66,7 +73,9 @@ public:
         void checkForNewClients();
 signals:
     void showClientSignal(int x,int y,char* str);
+    void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
     void graphicsClear();
+
 };
 
 #endif // SERVER_H

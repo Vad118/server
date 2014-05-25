@@ -32,4 +32,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 LIBS     += -lws2_32
+CONFIG += static
+LIBS += -static-libgcc
+QMAKE_LFLAGS = -static
 

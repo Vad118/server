@@ -1,10 +1,11 @@
 #include "server.h"
 
-_server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp)
+_server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket)
 {
     this->graphics=graphics;
     this->monitoring=monitoring;
     this->disp=disp;
+    this->monitoringSocket=monitoringSocket;
 }
 
 int _server::initialize()
@@ -253,6 +254,11 @@ void _server::work_cycle()
                            break;
                        default:
                            answer=processMessage(received_answer);
+                           // Если добавление - перерисовываем картинку
+                           if(received_answer.command==1)
+                           {
+                                showClients();
+                           }
                            if(answer.worker_id!=-1)
                                sendMessage(answer.worker_id,answer);
                            break;
@@ -261,6 +267,32 @@ void _server::work_cycle()
            }
        }
 stop();
+}
+
+void _server::showClients()
+{    // Копия MultithreadServerPart::showClients();
+    monitoring->getClientsArray();
+    emit graphicsClear();
+    for(int i=0;i<disp->nclients;i++)
+    {
+        emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
+    }
+    for(int i=0;i<monitoring->arbitersListCount;i++)
+        emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
+                               monitoring->arbitersList[i].position_y,
+                               monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_x,
+                               monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_y,
+                               monitoring->arbitersList[i].arbiter_id);
+
+}
+
+void _server::echo()
+{
+    for(int i=0;i<disp->nclients;i++)
+    {
+        string tmp=monitoringSocket->echo(i);
+        graphics->TextEditAppend(tmp.c_str());
+    }
 }
 
 
@@ -339,5 +371,12 @@ void MultiThreadServerPart::showClients()
     {
         emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,server->monitoring->clientsList[i].worker_addr);
     }
+    for(int i=0;i<server->monitoring->arbitersListCount;i++)
+        emit paintArbiterSignal(server->monitoring->arbitersList[i].position_x,
+                               server->monitoring->arbitersList[i].position_y,
+                               server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_x,
+                               server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_y,
+                               server->monitoring->arbitersList[i].arbiter_id);
+
 }
 

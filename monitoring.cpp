@@ -10,11 +10,10 @@ void Monitoring::getClientsArray()
 {
     getClientsList();
     calculateCoordinates();
-    //return clientsList;
-    //Если включен мониторинг
-    //showArbiters();
-}
 
+    getArbitersList();
+    calculateArbiters();
+}
 
 void Monitoring::getClientsList()
 {
@@ -30,11 +29,66 @@ void Monitoring::calculateCoordinates()
 {
     float step=(graphicObj->getWidth()-CLIENT_RECT_WIDTH)/(disp->nclients+1);
     int position_x=0;
-    int position_y=40;
+    int position_y=SERVER_RECT_HEIGHT+SERVER_CLIENTS_HEIGHT;
     for(int i=0;i<disp->nclients;i++)
     {
         position_x+=step;
         clientsList[i].position_x=position_x;
         clientsList[i].position_y=position_y;
+    }
+}
+
+void Monitoring::getArbitersList()
+{
+    int k=0;
+    for(int i=0;i<disp->nclients;i++)
+    {
+        if(disp->table[i].arbiters_count>0)
+        {
+            totalArbitersCount+=disp->table[i].arbiters_count;
+            char* arbiters_str=disp->table[i].arbiters;
+            char* arb_id=strtok(arbiters_str,"|");
+            for(int j=0;j<disp->table[i].arbiters_count;j++)
+            {
+                strcpy(arbitersList[k].arbiter_id,arb_id);
+                arb_id=strtok(NULL,"|");
+                arbitersList[k].clientsListId=i;
+                k++;
+            }
+        }
+    }
+    arbitersListCount=k;
+}
+
+void Monitoring::calculateArbiters()
+{
+    int i=0;
+    while(i<arbitersListCount)
+    {
+        int client_id=arbitersList[i].clientsListId;
+        if(disp->table[client_id].arbiters_count>0)
+        {
+            int step_x=2*CLIENT_RECT_WIDTH/disp->table[client_id].arbiters_count;
+            //int countLevels=(int)ceilf(disp->table[client_id].arbiters_count/2.0f);
+            int pos_x=clientsList[client_id].position_x-CLIENT_RECT_WIDTH/2;
+            int start_y=clientsList[client_id].position_y+CLIENTS_ARBITERS_HEIGHT;
+            int pos_y=start_y;
+            //int countStepY=1;
+            for(int j=0;j<disp->table[client_id].arbiters_count;j++)
+            {
+                arbitersList[i].position_x=pos_x;
+                arbitersList[i].position_y=pos_y;
+                pos_x+=step_x;
+                //if(countStepY<countLevels)
+                    pos_y+=ARBITERS_Y_STEP;
+                //else
+                //    pos_y-=ARBITERS_Y_STEP;
+
+                //countStepY++;
+                i++;
+            }
+        }
+        else
+            i++;
     }
 }
