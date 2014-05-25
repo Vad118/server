@@ -23,7 +23,7 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-class _server:public QObject
+class _server:public QThread
 {
     Q_OBJECT
 friend class MultiThreadServerPart;
@@ -50,11 +50,12 @@ public:
     void showAnswer(dispatcher_answer received_answer, bool final=true);
     void sendScriptToClients();
     void work_cycle();
-    void echo();
     void showClients();
+    void run();
 signals:
     void showClientSignal(int x,int y,char* str);
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
+    void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void graphicsClear();
 
 };
@@ -74,6 +75,7 @@ public:
 signals:
     void showClientSignal(int x,int y,char* str);
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
+    void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void graphicsClear();
 
 };

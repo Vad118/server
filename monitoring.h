@@ -23,6 +23,17 @@ struct arbiterObj
     int clientsListId;
 };
 
+struct traceObjects
+{
+    int position_x;
+    int position_y;
+    int type;
+    char text[STR_SIZE];
+
+    traceObjects():position_x(0),position_y(0),type(-1){}
+};
+
+
 class Monitoring:public QObject
 {
     Q_OBJECT
@@ -32,10 +43,12 @@ class Monitoring:public QObject
     void getArbitersList();
     void calculateArbiters();
     void calculateCoordinates();
+    void calculateTraceObjects();
 public:
     int arbitersListCount;
     clientObj clientsList[TOTAL_CLIENTS];
-    arbiterObj arbitersList[TOTAL_CLIENTS]; // Арбитров на самом деле может быть больше чем клиентов. Но константа не предусмотрена, поэтому так.
+    arbiterObj arbitersList[TOTAL_ARBITERS];
+    traceObjects traceObjectsList[TOTAL_ARBITERS];
     int totalArbitersCount;
     Monitoring(dispatcher *disp_obj,_graphics *graphic);
     void getClientsArray();

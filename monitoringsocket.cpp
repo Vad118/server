@@ -1,9 +1,9 @@
 #include "monitoringsocket.h"
 
-MonitoringSocket::MonitoringSocket(dispatcher *disp_par)
+MonitoringSocket::MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring)
 {
     disp=disp_par;
-    sendMessage(0);
+    this->monitoring=monitoring;
 }
 
 int MonitoringSocket::initialize()
@@ -39,19 +39,19 @@ void MonitoringSocket::stop()
     WSACleanup();
 }
 
-string MonitoringSocket::echo(int client_id)
+void MonitoringSocket::sendCommand(int command)
 {
-    sendMessage(client_id);
-    string msg="";
-    msg=receiveMessage(client_id);
-    while(msg=="")
-        msg=receiveMessage(client_id);
-    return msg;
+    sendStruct send_struct;
+    send_struct.command=command;
+    for(int i=0;i<disp->nclients;i++)
+    {
+        sendMessage(i,send_struct);
+    }
 }
 
-string MonitoringSocket::receiveMessage(int client_id)
+receiveStruct MonitoringSocket::receiveMessage(int client_id)
 {
-    char message[STR_SIZE];
+    receiveStruct answer;
     char *p;
     fd_set readfds;
     struct timeval tv;
@@ -66,16 +66,14 @@ string MonitoringSocket::receiveMessage(int client_id)
     //Select не блокировал выполнение программы до смены состояния сокета
     select(NULL,&readfds,NULL,NULL,&tv);
     //Если пришли данные на чтение то читаем
-    string msg="";
     if(FD_ISSET(clientSocket,&readfds))
     {
         int bytes_recv;
         //Если клиент не отключился и мы получили сообщение
         char *pBuff = new char[STR_SIZE];
-        if((bytes_recv=recv(clientSocket,pBuff,STR_SIZE,0)) &&(bytes_recv!=SOCKET_ERROR))
+        if((bytes_recv=recv(clientSocket,pBuff,sizeof( receiveStruct),0)) &&(bytes_recv!=SOCKET_ERROR) && (bytes_recv!=-1))
         {
-            msg.assign(pBuff);
-            //memcpy( &answer, pBuff, sizeof( dispatcher_answer));
+            memcpy( &answer, pBuff, sizeof( receiveStruct));
         }
         //else //Клиент отключился
         //{
@@ -86,28 +84,16 @@ string MonitoringSocket::receiveMessage(int client_id)
     }
     /*else
         answer.command=-1;*/
-
-
-
-    return msg;
+    return answer;
 }
 
 
-void MonitoringSocket::sendMessage(int client_id)
+void MonitoringSocket::sendMessage(int client_id, sendStruct send_struct)
 {
-     /*char msg[STR_SIZE];
-     sprintf(msg,"%d",i);
-     strcat(msg,": ");
-     strcat(msg,buf);*/
-    /*
-     SOCKET clientSocket=disp->table[client_id].clientSocket;
-     char *pBuff = new char[sizeof(dispatcher_answer)];
-     memcpy(pBuff,&answer,sizeof(dispatcher_answer));
-     send(clientSocket,pBuff, sizeof(dispatcher_answer), 0);*/
-    SOCKET clientSocket=disp->table[client_id].clientMonitoringSocket;
-    char msg[STR_SIZE];
-    strcpy(msg,"test message");
-    send(clientSocket,msg, STR_SIZE, 0);
+     SOCKET clientSocket=disp->table[client_id].clientMonitoringSocket;
+     char *pBuff = new char[sizeof(sendStruct)];
+     memcpy(pBuff,&send_struct,sizeof(sendStruct));
+     send(clientSocket,pBuff, sizeof(sendStruct), 0);
 }
 
 //--------------------------------------------------------
@@ -157,4 +143,67 @@ void MonitoringCheckNewMultithread::run()
             }
         }
     }
+}
+
+//------------------------------------------------------
+void MonitoringReceiveMultithread::init(MonitoringSocket *monitoringSocket)
+{
+    this->monitoringSocketObj=monitoringSocket;
+}
+
+void MonitoringReceiveMultithread::run()
+{
+    while(1)
+    {
+        receiveStruct msg;
+        msg.command=-1;
+        strcpy(msg.text,"");
+        bool changed=false;
+        for(int i=0;i<monitoringSocketObj->disp->nclients;i++)
+        {
+            msg=monitoringSocketObj->receiveMessage(i);
+            if(msg.command>=0 && strcmp(msg.text,"")!=0)
+            {
+                monitoringSocketObj->monitoring->traceObjectsList[i].type=msg.command;
+                strcpy(monitoringSocketObj->monitoring->traceObjectsList[i].text,msg.text);
+                changed=true;
+            }
+        }
+        if(changed)
+        {
+            draw();
+        }
+
+    }
+}
+
+void MonitoringReceiveMultithread::draw()
+{
+    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+    QMutex mutex;
+    mutex.lock();
+    monitoringSocketObj->monitoring->getClientsArray();
+    emit graphicsClear();
+    for(int i=0;i<monitoringSocketObj->disp->nclients;i++)
+    {
+        emit showClientSignal(monitoringSocketObj->monitoring->clientsList[i].position_x,monitoringSocketObj->monitoring->clientsList[i].position_y,monitoringSocketObj->monitoring->clientsList[i].worker_addr);
+    }
+    for(int i=0;i<monitoringSocketObj->monitoring->arbitersListCount;i++)
+    {
+        emit paintArbiterSignal(monitoringSocketObj->monitoring->arbitersList[i].position_x,
+                               monitoringSocketObj->monitoring->arbitersList[i].position_y,
+                               monitoringSocketObj->monitoring->clientsList[monitoringSocketObj->monitoring->arbitersList[i].clientsListId].position_x,
+                               monitoringSocketObj->monitoring->clientsList[monitoringSocketObj->monitoring->arbitersList[i].clientsListId].position_y,
+                               monitoringSocketObj->monitoring->arbitersList[i].arbiter_id);
+        if(monitoringSocketObj->monitoring->traceObjectsList[i].type!=-1)
+        {
+            emit paintTraceObjectSignal(monitoringSocketObj->monitoring->traceObjectsList[i].position_x,
+                                  monitoringSocketObj->monitoring->traceObjectsList[i].position_y,
+                                  monitoringSocketObj->monitoring->arbitersList[i].position_x,
+                                  monitoringSocketObj->monitoring->arbitersList[i].position_y,
+                                  monitoringSocketObj->monitoring->traceObjectsList[i].text,
+                                  monitoringSocketObj->monitoring->traceObjectsList[i].type);
+        }
+    }
+    mutex.unlock();
 }

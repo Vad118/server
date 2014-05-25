@@ -32,6 +32,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocketObj;
     MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
+    MonitoringReceiveMultithread *monitoringReceiveMultithread;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 

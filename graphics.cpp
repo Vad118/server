@@ -23,8 +23,6 @@ void _graphics::TextEditAppend(const char *str)
 
 void _graphics::paintClient(int x, int y, char* str)
 {
-    QMutex mutex;
-    mutex.lock();
     QBrush br(Qt::white);
     QPen pen(Qt::black);
     PalletScene->addLine(server_x+SERVER_RECT_WIDTH/2,server_y+SERVER_RECT_HEIGHT,x+CLIENT_RECT_WIDTH/2,y,pen);
@@ -33,10 +31,7 @@ void _graphics::paintClient(int x, int y, char* str)
     QGraphicsTextItem* io = new QGraphicsTextItem;
     io->setPos(x,y);
     io->setPlainText(str);
-    //QMetaObject::invokeMethod(PalletScene,"addRect",Q_ARG(QGraphicsItem*,io));
-    //QMetaObject::invokeMethod(PalletScene,"addItem",Q_ARG(QGraphicsItem*,io));
     PalletScene->addItem(io);
-    mutex.unlock();
 }
 
 void _graphics::paintArbiter(int x, int y, int client_x, int client_y, char* text)
@@ -68,5 +63,31 @@ void _graphics::paintServer()
     QGraphicsTextItem* io = new QGraphicsTextItem;
     io->setPos(server_x,server_y);
     io->setPlainText("SERVER");
+    PalletScene->addItem(io);
+}
+
+void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, char *text, int type)
+{
+    QBrush br(Qt::white);
+    QPen pen;
+    //PalletScene->addLine(server_x+SERVER_RECT_WIDTH/2,server_y+SERVER_RECT_HEIGHT,x+CLIENT_RECT_WIDTH/2,y,pen);
+
+    switch(type)
+    {
+        case 0:
+            pen.setColor(Qt::red);
+            break;
+        case 1:
+            pen.setColor(Qt::green);
+            break;
+        case 2:
+            pen.setColor(Qt::blue);
+            break;
+    }
+
+    PalletScene->addRect(x,y,CLIENT_RECT_WIDTH,CLIENT_RECT_HEIGHT,pen, br);
+    QGraphicsTextItem* io = new QGraphicsTextItem;
+    io->setPos(x,y);
+    io->setPlainText(text);
     PalletScene->addItem(io);
 }

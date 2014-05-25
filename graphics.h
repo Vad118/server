@@ -34,6 +34,7 @@ public:
 public slots:
     void paintClient(int x, int y, char* text);
     void paintArbiter(int x, int y, int client_x, int client_y, char* text);
+    void paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void clear();
 };
 

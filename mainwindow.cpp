@@ -13,11 +13,12 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->graphicsView->setScene(graphics->PalletScene);
         dsp=new dispatcher(); // TEST
         monitoring=new Monitoring(dsp,graphics);
-        monitoringSocketObj=new MonitoringSocket(dsp);
+        monitoringSocketObj=new MonitoringSocket(dsp,monitoring);
         server=new _server(graphics, monitoring,dsp,monitoringSocketObj);
         QObject::connect(server, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
         QObject::connect(server, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         QObject::connect(server, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
+        QObject::connect(server, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
 
         monitoring_serv_init();
         main_serv_init();
@@ -29,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
         QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
         QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         QObject::connect(multiThreadServPart, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
+        QObject::connect(multiThreadServPart, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
         multiThreadServPart->start();
 
         // Поток 3 - CheckNewClients на второй сокет
@@ -36,6 +38,14 @@ MainWindow::MainWindow(QWidget *parent) :
         monitoringCheckNewMultithread->init(monitoringSocketObj);
         monitoringCheckNewMultithread->start();
 
+        // Поток 4 - Трассировка - получение сообщений. Отправка в основном потоке
+        monitoringReceiveMultithread=new MonitoringReceiveMultithread();
+        monitoringReceiveMultithread->init(monitoringSocketObj);
+        QObject::connect(monitoringReceiveMultithread, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
+        QObject::connect(monitoringReceiveMultithread, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
+        QObject::connect(monitoringReceiveMultithread, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
+        QObject::connect(monitoringReceiveMultithread, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
+        monitoringReceiveMultithread->start();
         //TEST_GENERATE_DSP_TABLE();
 
     }
@@ -83,17 +93,18 @@ void MainWindow::main_serv_send()
 {
     server->clearArbiters();
     server->sendScriptToClients();
-    server->work_cycle();
+    server->start();
 }
 
 void MainWindow::on_SendButton_clicked()
 {
+    monitoringSocketObj->sendCommand(1);
     main_serv_send();
 }
 
 void MainWindow::on_pushButton_clicked()
 {
-    server->echo();
+
 }
 
 void MainWindow::on_pushButton_3_clicked()

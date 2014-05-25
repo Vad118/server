@@ -13,6 +13,8 @@ void Monitoring::getClientsArray()
 
     getArbitersList();
     calculateArbiters();
+
+    calculateTraceObjects();
 }
 
 void Monitoring::getClientsList()
@@ -46,7 +48,8 @@ void Monitoring::getArbitersList()
         if(disp->table[i].arbiters_count>0)
         {
             totalArbitersCount+=disp->table[i].arbiters_count;
-            char* arbiters_str=disp->table[i].arbiters;
+            char arbiters_str[STR_SIZE];
+            strcpy(arbiters_str,disp->table[i].arbiters);
             char* arb_id=strtok(arbiters_str,"|");
             for(int j=0;j<disp->table[i].arbiters_count;j++)
             {
@@ -90,5 +93,17 @@ void Monitoring::calculateArbiters()
         }
         else
             i++;
+    }
+}
+
+void Monitoring::calculateTraceObjects()
+{
+    for(int i=0;i<arbitersListCount;i++)
+    {
+        if(traceObjectsList[i].type!=-1)
+        {
+            traceObjectsList[i].position_x=arbitersList[i].position_x+30;
+            traceObjectsList[i].position_y=arbitersList[i].position_y+30;
+        }
     }
 }

@@ -270,7 +270,9 @@ stop();
 }
 
 void _server::showClients()
-{    // Копия MultithreadServerPart::showClients();
+{    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+    QMutex mutex;
+    mutex.lock();
     monitoring->getClientsArray();
     emit graphicsClear();
     for(int i=0;i<disp->nclients;i++)
@@ -278,23 +280,30 @@ void _server::showClients()
         emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
     }
     for(int i=0;i<monitoring->arbitersListCount;i++)
+    {
         emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
                                monitoring->arbitersList[i].position_y,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_x,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_y,
                                monitoring->arbitersList[i].arbiter_id);
-
-}
-
-void _server::echo()
-{
-    for(int i=0;i<disp->nclients;i++)
-    {
-        string tmp=monitoringSocket->echo(i);
-        graphics->TextEditAppend(tmp.c_str());
+        if(monitoring->traceObjectsList[i].type!=-1)
+        {
+            emit paintTraceObjectSignal(monitoring->traceObjectsList[i].position_x,
+                              monitoring->traceObjectsList[i].position_y,
+                              monitoring->arbitersList[i].position_x,
+                              monitoring->arbitersList[i].position_y,
+                              monitoring->traceObjectsList[i].text,
+                              monitoring->traceObjectsList[i].type);
+        }
     }
+    mutex.unlock();
 }
 
+
+void _server::run()
+{
+    work_cycle();
+}
 
 //---------------------------------------------------------------------------
 
@@ -362,9 +371,9 @@ void MultiThreadServerPart::checkForNewClients()
 
 void MultiThreadServerPart::showClients()
 {
-    //itoa(server->getTotalClients(),str,10);
-    //server->graphics->TextEditAppend(str);
-    // Сделать через возрващение массива
+    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+    QMutex mutex;
+    mutex.lock();
     server->monitoring->getClientsArray();
     emit graphicsClear();
     for(int i=0;i<server->disp->nclients;i++)
@@ -372,11 +381,22 @@ void MultiThreadServerPart::showClients()
         emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,server->monitoring->clientsList[i].worker_addr);
     }
     for(int i=0;i<server->monitoring->arbitersListCount;i++)
+    {
         emit paintArbiterSignal(server->monitoring->arbitersList[i].position_x,
                                server->monitoring->arbitersList[i].position_y,
                                server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_x,
                                server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_y,
                                server->monitoring->arbitersList[i].arbiter_id);
-
+        if(server->monitoring->traceObjectsList[i].type!=-1)
+        {
+            emit paintTraceObjectSignal(server->monitoring->traceObjectsList[i].position_x,
+                          server->monitoring->traceObjectsList[i].position_y,
+                          server->monitoring->arbitersList[i].position_x,
+                          server->monitoring->arbitersList[i].position_y,
+                          server->monitoring->traceObjectsList[i].text,
+                          server->monitoring->traceObjectsList[i].type);
+        }
+    }
+    mutex.unlock();
 }
 
