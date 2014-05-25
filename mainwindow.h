@@ -19,9 +19,9 @@ public:
 private slots:
     void on_SendButton_clicked();
 
-    void on_pushButton_clicked();
+/*    void on_pushButton_clicked();
 
-    void on_pushButton_3_clicked();
+    void on_pushButton_3_clicked();*/
 
 private:
     Ui::MainWindow *ui;
@@ -32,7 +32,6 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocketObj;
     MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
-    MonitoringReceiveMultithread *monitoringReceiveMultithread;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 

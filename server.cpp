@@ -260,7 +260,11 @@ void _server::work_cycle()
                                 showClients();
                            }
                            if(answer.worker_id!=-1)
+                           {
                                sendMessage(answer.worker_id,answer);
+                               if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                                   monitoringSocket->getMonitoringMessage();
+                           }
                            break;
                    }
                }

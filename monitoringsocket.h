@@ -35,10 +35,12 @@ struct receiveStruct
     // 2 - become
     int command;
     char text[STR_SIZE];
+    char arbiter_id[STR_SIZE];
 };
 
-class MonitoringSocket
+class MonitoringSocket:public QObject
 {
+    Q_OBJECT
     friend class MonitoringCheckNewMultithread;
     friend class MonitoringReceiveMultithread;
 
@@ -47,6 +49,7 @@ class MonitoringSocket
     WSADATA WsaData;
     Monitoring *monitoring;
 public:
+    int monitoringType;  // Соответствует sendStruct
     MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring);
     int initialize();
     receiveStruct receiveMessage(int client_id);
@@ -54,6 +57,15 @@ public:
     void stop();
     string echo(int client_id);
     void sendCommand(int command);
+
+    //ex receiveMultithread
+    void getMonitoringMessage();
+    void draw();
+signals:
+    void showClientSignal(int x,int y,char* str);
+    void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
+    void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
+    void graphicsClear();
 };
 
 class MonitoringCheckNewMultithread: public QThread
@@ -65,21 +77,4 @@ protected:
 public:
     void init(MonitoringSocket *monitoringSocket);
 };
-
-class MonitoringReceiveMultithread: public QThread
-{
-    Q_OBJECT
-    MonitoringSocket *monitoringSocketObj;
-protected:
-    void run();
-    void draw();
-public:
-    void init(MonitoringSocket *monitoringSocket);
-signals:
-    void showClientSignal(int x,int y,char* str);
-    void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
-    void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
-    void graphicsClear();
-};
-
 #endif // MONITORINGSOCKET_H

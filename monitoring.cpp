@@ -1,6 +1,6 @@
 #include "monitoring.h"
 
-Monitoring::Monitoring(dispatcher *disp_obj, _graphics *graphic)
+Monitoring::Monitoring(dispatcher *disp_obj, _graphics *graphic):totalArbitersCount(0)
 {
     disp=disp_obj;
     graphicObj=graphic;
@@ -43,6 +43,7 @@ void Monitoring::calculateCoordinates()
 void Monitoring::getArbitersList()
 {
     int k=0;
+    totalArbitersCount=0;
     for(int i=0;i<disp->nclients;i++)
     {
         if(disp->table[i].arbiters_count>0)
@@ -98,12 +99,23 @@ void Monitoring::calculateArbiters()
 
 void Monitoring::calculateTraceObjects()
 {
-    for(int i=0;i<arbitersListCount;i++)
+    for(int i=0;i<disp->nclients;i++)
     {
         if(traceObjectsList[i].type!=-1)
         {
-            traceObjectsList[i].position_x=arbitersList[i].position_x+30;
-            traceObjectsList[i].position_y=arbitersList[i].position_y+30;
+            for(int j=0;j<totalArbitersCount;j++)
+            {
+                if(strcmp(traceObjectsList[i].arbiter_id,"-1")==0) // Значит create без арбитра
+                {
+                    traceObjectsList[i].position_x=0;
+                    traceObjectsList[i].position_y=0;
+                }
+                if(strcmp(traceObjectsList[i].arbiter_id,arbitersList[j].arbiter_id)==0)
+                {
+                    traceObjectsList[i].position_x=arbitersList[j].position_x;
+                    traceObjectsList[i].position_y=arbitersList[j].position_y+30;
+                }
+            }
         }
     }
 }

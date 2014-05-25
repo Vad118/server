@@ -70,7 +70,7 @@ receiveStruct MonitoringSocket::receiveMessage(int client_id)
     {
         int bytes_recv;
         //Если клиент не отключился и мы получили сообщение
-        char *pBuff = new char[STR_SIZE];
+        char pBuff[STR_SIZE];
         if((bytes_recv=recv(clientSocket,pBuff,sizeof( receiveStruct),0)) &&(bytes_recv!=SOCKET_ERROR) && (bytes_recv!=-1))
         {
             memcpy( &answer, pBuff, sizeof( receiveStruct));
@@ -80,7 +80,6 @@ receiveStruct MonitoringSocket::receiveMessage(int client_id)
         //    answer.command=-1;
         //    clientDisconnected(client_id);
         //}
-        delete[] pBuff;
     }
     /*else
         answer.command=-1;*/
@@ -146,28 +145,27 @@ void MonitoringCheckNewMultithread::run()
 }
 
 //------------------------------------------------------
-void MonitoringReceiveMultithread::init(MonitoringSocket *monitoringSocket)
+void MonitoringSocket::getMonitoringMessage()
 {
-    this->monitoringSocketObj=monitoringSocket;
-}
-
-void MonitoringReceiveMultithread::run()
-{
-    while(1)
+    bool changed=false;
+    while(!changed)
     {
         receiveStruct msg;
         msg.command=-1;
         strcpy(msg.text,"");
-        bool changed=false;
-        for(int i=0;i<monitoringSocketObj->disp->nclients;i++)
+        for(int i=0;i<disp->nclients;i++)
         {
-            msg=monitoringSocketObj->receiveMessage(i);
+            QMutex mutex;
+            mutex.lock();
+            msg=receiveMessage(i);
             if(msg.command>=0 && strcmp(msg.text,"")!=0)
             {
-                monitoringSocketObj->monitoring->traceObjectsList[i].type=msg.command;
-                strcpy(monitoringSocketObj->monitoring->traceObjectsList[i].text,msg.text);
+                monitoring->traceObjectsList[i].type=msg.command;
+                strcpy(monitoring->traceObjectsList[i].text,msg.text);
+                strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_id);
                 changed=true;
             }
+            mutex.unlock();
         }
         if(changed)
         {
@@ -177,32 +175,32 @@ void MonitoringReceiveMultithread::run()
     }
 }
 
-void MonitoringReceiveMultithread::draw()
+void MonitoringSocket::draw()
 {
     // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
     QMutex mutex;
     mutex.lock();
-    monitoringSocketObj->monitoring->getClientsArray();
+    monitoring->getClientsArray();
     emit graphicsClear();
-    for(int i=0;i<monitoringSocketObj->disp->nclients;i++)
+    for(int i=0;i<disp->nclients;i++)
     {
-        emit showClientSignal(monitoringSocketObj->monitoring->clientsList[i].position_x,monitoringSocketObj->monitoring->clientsList[i].position_y,monitoringSocketObj->monitoring->clientsList[i].worker_addr);
+        emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
     }
-    for(int i=0;i<monitoringSocketObj->monitoring->arbitersListCount;i++)
+    for(int i=0;i<monitoring->arbitersListCount;i++)
     {
-        emit paintArbiterSignal(monitoringSocketObj->monitoring->arbitersList[i].position_x,
-                               monitoringSocketObj->monitoring->arbitersList[i].position_y,
-                               monitoringSocketObj->monitoring->clientsList[monitoringSocketObj->monitoring->arbitersList[i].clientsListId].position_x,
-                               monitoringSocketObj->monitoring->clientsList[monitoringSocketObj->monitoring->arbitersList[i].clientsListId].position_y,
-                               monitoringSocketObj->monitoring->arbitersList[i].arbiter_id);
-        if(monitoringSocketObj->monitoring->traceObjectsList[i].type!=-1)
+        emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
+                               monitoring->arbitersList[i].position_y,
+                               monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_x,
+                               monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_y,
+                               monitoring->arbitersList[i].arbiter_id);
+        if(monitoring->traceObjectsList[i].type!=-1)
         {
-            emit paintTraceObjectSignal(monitoringSocketObj->monitoring->traceObjectsList[i].position_x,
-                                  monitoringSocketObj->monitoring->traceObjectsList[i].position_y,
-                                  monitoringSocketObj->monitoring->arbitersList[i].position_x,
-                                  monitoringSocketObj->monitoring->arbitersList[i].position_y,
-                                  monitoringSocketObj->monitoring->traceObjectsList[i].text,
-                                  monitoringSocketObj->monitoring->traceObjectsList[i].type);
+            emit paintTraceObjectSignal(monitoring->traceObjectsList[i].position_x,
+                                  monitoring->traceObjectsList[i].position_y,
+                                  monitoring->arbitersList[i].position_x,
+                                  monitoring->arbitersList[i].position_y,
+                                  monitoring->traceObjectsList[i].text,
+                                  monitoring->traceObjectsList[i].type);
         }
     }
     mutex.unlock();

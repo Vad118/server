@@ -29,6 +29,7 @@ struct traceObjects
     int position_y;
     int type;
     char text[STR_SIZE];
+    char arbiter_id[STR_SIZE];
 
     traceObjects():position_x(0),position_y(0),type(-1){}
 };
