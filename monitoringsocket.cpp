@@ -5,6 +5,8 @@ MonitoringSocket::MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring)
     disp=disp_par;
     this->monitoring=monitoring;
     save_file="save.txt";
+    total_saved_actors=0;
+    total_saved_pull_messages=0;
 }
 
 int MonitoringSocket::initialize()
@@ -126,14 +128,15 @@ void MonitoringSocket::getMonitoringMessage()
     }
 }
 
-void MonitoringSocket::save()
+void MonitoringSocket::collectActorsAndTheirMessages()
 {
-    saveActor saveActorsStruct[TOTAL_ARBITERS];
-    int current_actor=0;
+    total_saved_actors;
     for(int i=0;i<disp->nclients;i++)
     {
         bool finish=false;
         int count=0;
+        // Собираем актеров
+        int count_client_messages=0;
         while(!finish)
         {
             fd_set readfds;
@@ -156,24 +159,67 @@ void MonitoringSocket::save()
                 char *pBuff = new char[sizeof(saveActor)];
                 if((bytes_recv=recv(clientSocket,pBuff,sizeof( saveActor),0)) &&(bytes_recv!=SOCKET_ERROR) && (bytes_recv!=-1))
                 {
-                    memcpy( &saveActorsStruct[current_actor], pBuff, sizeof( saveActor));
+                    memcpy( &saveActorsStruct[total_saved_actors], pBuff, sizeof( saveActor));
                     count++;
-                    if(count>=saveActorsStruct[current_actor].totalSaveCount)  // Останваливаемся, когда считали всех актеров для сохранения с 1-го клиента
+                    count_client_messages=saveActorsStruct[total_saved_actors].totalUnreadMessages;
+                    if(count>=saveActorsStruct[total_saved_actors].totalSaveCount)  // Останваливаемся, когда считали всех актеров для сохранения с 1-го клиента
                         finish=true;
-                    current_actor++;
+                    total_saved_actors++;
                 }
                 delete[] pBuff;
             }
         }
+        // Собираем пул сообщений
+        int count=0;
+        if(count_client_messages>0)
+        {
+            // Собираем сообщения
+            while(!finish)
+            {
+                fd_set readfds;
+                struct timeval tv;
+                tv.tv_sec = 0;
+                tv.tv_usec = 0;
+                SOCKET clientSocket=disp->table[i].clientMonitoringSocket;
+                //Очищаем readfds
+                FD_ZERO(&readfds);
+                //Заносим дескриптор сокета в readfds
+                FD_SET(clientSocket,&readfds);
+                //Последний параметр - время ожидания. Выставляем нули чтобы
+                //Select не блокировал выполнение программы до смены состояния сокета
+                select(NULL,&readfds,NULL,NULL,&tv);
+                //Если пришли данные на чтение то читаем
+                if(FD_ISSET(clientSocket,&readfds))
+                {
+                    int bytes_recv;
+                    //Если клиент не отключился и мы получили сообщение
+                    char *pBuff = new char[sizeof(dispatcher_answer)];
+                    if((bytes_recv=recv(clientSocket,pBuff,sizeof( dispatcher_answer),0)) &&(bytes_recv!=SOCKET_ERROR) && (bytes_recv!=-1))
+                    {
+                        memcpy( &clientsMessagesPull[total_saved_pull_messages], pBuff, sizeof( dispatcher_answer));
+                        count++;
+                        if(count>=count_client_messages)
+                            finish=true;
+                        total_saved_pull_messages++;
+                    }
+                    delete[] pBuff;
+                }
+            }
+        }
     }
 
-    // Непосредственно сохранение
-    ofstream f(this->save_file.c_str(),ios::out | ios::binary);
-    f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
-    f.close();
 
 }
 
+void MonitoringSocket::save(dispatcher_answer *all_received_answers)
+{
+    // Непосредственно сохранение
+    ofstream f(this->save_file.c_str(),ios::out | ios::binary);
+    f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+    f.write((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
+    f.write((char *)&all_received_answers,sizeof(all_received_answers));
+    f.close();
+}
 
 void MonitoringSocket::draw()
 {

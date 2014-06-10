@@ -35,6 +35,8 @@ private:
     _graphics *graphics;
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocket;
+
+    void collect_all_received_answers(dispatcher_answer *all_received_answers, int &total_received_answers);
 public:
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
     int initialize();

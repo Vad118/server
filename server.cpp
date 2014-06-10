@@ -240,11 +240,13 @@ void _server::work_cycle()
 {
       dispatcher_answer received_answer,answer;
       bool finished=false;
+      int total_received_answers=0;
       while (!finished)
       {
            //checkForNewClients();
            //+++++++++
            //Читаем текущих клиентов
+          bool saving=false;
            for(int i=0;i<getTotalClients();i++)
            {
                received_answer=receiveMessage(i);
@@ -272,7 +274,10 @@ void _server::work_cycle()
                                if(monitoringSocket->monitoringType==4) // Если сохранение
                                {
                                    monitoringSocket->getMonitoringMessage();
-                                   monitoringSocket->save();
+                                   monitoringSocket->collectActorsAndTheirMessages();
+                                   saving=true;
+                                   all_received_answers[total_received_answers]=received_answer;
+                                   total_received_answers++;
                                }
                                else if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
                                    monitoringSocket->getMonitoringMessage();
@@ -281,8 +286,38 @@ void _server::work_cycle()
                    }
                }
            }
+           if(saving)
+           {
+               // Сохраняем в файл.
+               dispatcher_answer all_received_answers[TOTAL_ARBITERS];
+
+               collect_all_received_answers(all_received_answers,total_received_answers);
+               monitoringSocket->save(all_received_answers);
+           }
        }
 stop();
+}
+
+void _server::collect_all_received_answers(dispatcher_answer *all_received_answers,int &total_received_answers)
+{
+    // Считываем все что есть на сокетах по всем клиентам - для сохранения. После Load все эти пакеты будут перезапущены.
+    // На случай не дошедших пакетов - минимум 10 считываний после последнего пришедшего.
+    dispatcher_answer received_answer;
+    for(int i=0;i<getTotalClients();i++)
+    {
+        int count_read=0;
+        while(count_read<=10)
+        {
+            received_answer=receiveMessage(i);
+            if(received_answer.command!=-1)
+            {
+                count_read=0;
+                all_received_answers[total_received_answers]=received_answer;
+                total_received_answers++;
+            }
+            count_read++;
+        }
+    }
 }
 
 void _server::showClients()
