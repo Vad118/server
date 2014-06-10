@@ -95,7 +95,7 @@ void MainWindow::main_serv_send()
 
 void MainWindow::on_SendButton_clicked()
 {
-    monitoringSocketObj->sendCommand(1);
+    monitoringSocketObj->sendCommand(2);
     monitoringSocketObj->monitoringType=1;
     main_serv_send();
 }
@@ -148,4 +148,32 @@ void MainWindow::TEST_GENERATE_DSP_TABLE()
     strcpy(dsp->table[5].arbiters,"|5;0|5;1|5;2|5;3|5;4|");
     dsp->table[5].worker_addr=5;
 
+}
+
+void MainWindow::on_checkBox_2_clicked()
+{
+    if(ui->checkBox_2->isChecked())
+        ui->pushButton->setEnabled(true);
+    else
+        ui->pushButton->setEnabled(false);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    monitoringSocketObj->sendCommand(3);
+    monitoringSocketObj->monitoringType=2;
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    monitoringSocketObj->sendCommand(4);
+    monitoringSocketObj->monitoringType=4;
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    server->clearArbiters();
+    server->sendScriptToClients();
+    monitoringSocketObj->loadFileAndSendActors();
+    server->start();
 }

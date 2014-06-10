@@ -20,6 +20,7 @@ struct dispatcher_answer
     // 61- идет процесс пересылки скрипта
     // 62- процесс пересылки завершен
     // 7 - Запуск скрипта(одному работнику)
+    // 8 - Запуск вычислений после загрузки
     int worker_id; //кому отправляем
     char arbiter_id[STR_SIZE]; //Арбитр, которому отправляем
     //actor actor_create_msg; //Параметры для передачи в create\become
@@ -44,6 +45,7 @@ public:
         int worker_addr;
         SOCKET clientSocket;
         SOCKET clientMonitoringSocket;
+        int clientMonitoringSocketStatus;   // 0 - обычный режим, 1 - прием save сообщений
         char arbiters[STR_SIZE];
         int arbiters_count;
     }table[TOTAL_CLIENTS];

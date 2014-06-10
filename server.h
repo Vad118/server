@@ -48,7 +48,7 @@ public:
     void send_file(int client_id);
     void clearArbiters();
     void showAnswer(dispatcher_answer received_answer, bool final=true);
-    void sendScriptToClients();
+    void sendScriptToClients(bool loadSaved);
     void work_cycle();
     void showClients();
     void run();

@@ -85,7 +85,7 @@ void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, cha
             break;
     }
 
-    PalletScene->addRect(x,y,CLIENT_RECT_WIDTH,CLIENT_RECT_HEIGHT,pen, br);
+    PalletScene->addRect(x,y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
     QGraphicsTextItem* io = new QGraphicsTextItem;
     io->setPos(x,y);
     io->setPlainText(text);

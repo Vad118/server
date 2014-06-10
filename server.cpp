@@ -200,7 +200,7 @@ void _server::showAnswer(dispatcher_answer received_answer, bool final)
     graphics->TextEditAppend(str.c_str());
 }
 
-void _server::sendScriptToClients()
+void _server::sendScriptToClients(bool loadSaved=false)
 {
     // Раньше назывался getInput И было считывание SEND и QUIT из консоли
     // Теперь это первоначальная рассылка скрипта
@@ -222,9 +222,16 @@ void _server::sendScriptToClients()
             sendMessage(i,answer);
             send_file(i);
         }
-        answer.command=7;  //Стартуем скрипт
-        strcpy(answer.script,"");
-        sendMessage(0,answer); //Старт работы всегда на нулевом работнике
+        if(!loadSaved)
+        {
+            answer.command=7;  //Стартуем скрипт
+            strcpy(answer.script,"");
+            sendMessage(0,answer); //Старт работы всегда на нулевом работнике
+        }
+        else
+        {
+            // Загрузка
+        }
     }
 }
 
@@ -262,7 +269,12 @@ void _server::work_cycle()
                            if(answer.worker_id!=-1)
                            {
                                sendMessage(answer.worker_id,answer);
-                               if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                               if(monitoringSocket->monitoringType==4) // Если сохранение
+                               {
+                                   monitoringSocket->getMonitoringMessage();
+                                   monitoringSocket->save();
+                               }
+                               else if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
                                    monitoringSocket->getMonitoringMessage();
                            }
                            break;
