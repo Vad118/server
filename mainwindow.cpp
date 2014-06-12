@@ -173,7 +173,10 @@ void MainWindow::on_pushButton_3_clicked()
 void MainWindow::on_pushButton_4_clicked()
 {
     server->clearArbiters();
-    server->sendScriptToClients();
-    monitoringSocketObj->loadFileAndSendActors();
+    monitoringSocketObj->loadFile();
+    server->sendScriptToClients(true);
+    server->loadCreateActors();
+    server->loadSendOutputMessages();
+    server->loadInputMessages();
     server->start();
 }

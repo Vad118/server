@@ -36,7 +36,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocket;
 
-    void collect_all_received_answers(dispatcher_answer *all_received_answers, int &total_received_answers);
+    void collect_all_received_answers(int &total_received_answers);
 public:
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
     int initialize();
@@ -50,9 +50,14 @@ public:
     void send_file(int client_id);
     void clearArbiters();
     void showAnswer(dispatcher_answer received_answer, bool final=true);
-    void sendScriptToClients(bool loadSaved);
+    void sendScriptToClients(bool loadSaved=false);
     void work_cycle();
     void showClients();
+
+    void loadCreateActors();
+    void loadSendOutputMessages(); // Сообщения которые шли с сервера
+    void loadInputMessages();      // Сообщения которые шли на сервер
+
     void run();
 signals:
     void showClientSignal(int x,int y,char* str);

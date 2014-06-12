@@ -200,7 +200,7 @@ void _server::showAnswer(dispatcher_answer received_answer, bool final)
     graphics->TextEditAppend(str.c_str());
 }
 
-void _server::sendScriptToClients(bool loadSaved=false)
+void _server::sendScriptToClients(bool loadSaved)
 {
     // Раньше назывался getInput И было считывание SEND и QUIT из консоли
     // Теперь это первоначальная рассылка скрипта
@@ -240,6 +240,7 @@ void _server::work_cycle()
 {
       dispatcher_answer received_answer,answer;
       bool finished=false;
+      dispatcher_answer all_received_answers[TOTAL_ARBITERS];
       int total_received_answers=0;
       while (!finished)
       {
@@ -276,7 +277,7 @@ void _server::work_cycle()
                                    monitoringSocket->getMonitoringMessage();
                                    monitoringSocket->collectActorsAndTheirMessages();
                                    saving=true;
-                                   all_received_answers[total_received_answers]=received_answer;
+                                   monitoringSocket->all_received_answers[total_received_answers]=received_answer;
                                    total_received_answers++;
                                }
                                else if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
@@ -289,16 +290,15 @@ void _server::work_cycle()
            if(saving)
            {
                // Сохраняем в файл.
-               dispatcher_answer all_received_answers[TOTAL_ARBITERS];
 
-               collect_all_received_answers(all_received_answers,total_received_answers);
-               monitoringSocket->save(all_received_answers);
+               collect_all_received_answers(total_received_answers);
+               monitoringSocket->save();
            }
        }
 stop();
 }
 
-void _server::collect_all_received_answers(dispatcher_answer *all_received_answers,int &total_received_answers)
+void _server::collect_all_received_answers(int &total_received_answers)
 {
     // Считываем все что есть на сокетах по всем клиентам - для сохранения. После Load все эти пакеты будут перезапущены.
     // На случай не дошедших пакетов - минимум 10 считываний после последнего пришедшего.
@@ -312,7 +312,7 @@ void _server::collect_all_received_answers(dispatcher_answer *all_received_answe
             if(received_answer.command!=-1)
             {
                 count_read=0;
-                all_received_answers[total_received_answers]=received_answer;
+                monitoringSocket->all_received_answers[total_received_answers]=received_answer;
                 total_received_answers++;
             }
             count_read++;
@@ -354,6 +354,126 @@ void _server::showClients()
 void _server::run()
 {
     work_cycle();
+}
+
+
+void _server::loadCreateActors()
+{
+    clearArbiters();
+    //monitoringSocket->saveActorsStruct;
+    /*
+    struct saveActor
+    {
+         char behavior[STR_SIZE];
+         char parameters[5][50];
+         int count;
+         char id[STR_SIZE];
+
+         int totalSaveCount;
+         int totalUnreadMessages;
+    };
+     */
+    for(int i=0;i<monitoringSocket->saveActorsStruct[0].totalSaveCount;i++)
+    {
+        dispatcher_answer element,answer;
+        element.command=1;
+        strcpy(element.arbiter_id,monitoringSocket->saveActorsStruct[i].id);
+        strcpy(element.actor_behavior,monitoringSocket->saveActorsStruct[i].behavior);
+        for(int j=0;j<5;j++)
+        {
+            strcpy(element.actor_parameters[j],monitoringSocket->saveActorsStruct[i].parameters[j]);
+        }
+        element.actor_par_count=monitoringSocket->saveActorsStruct[i].count;
+
+        // Аналогично куску из work_cycle
+        switch(element.command)
+        {
+            case 4:
+                showAnswer(element,false);
+                break;
+            case 5:
+                showAnswer(element,true);
+                break;
+            default:
+                answer=processMessage(element);
+                // Если добавление - перерисовываем картинку
+                if(element.command==1)
+                {
+                     showClients();
+                }
+                if(answer.worker_id!=-1)
+                {
+                    sendMessage(answer.worker_id,answer);
+                    if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                        monitoringSocket->getMonitoringMessage();
+                }
+                break;
+        }
+    }
+}
+
+void _server::loadInputMessages() // Сообщения которые шли на сервер
+{
+    //monitoringSocket->all_received_answers;
+    for(int i=0;i<TOTAL_ARBITERS;i++)
+    {
+        dispatcher_answer element,answer;
+        if(monitoringSocket->all_received_answers[i].command==1 ||
+            monitoringSocket->all_received_answers[i].command==2 ||
+            monitoringSocket->all_received_answers[i].command==4 ||
+            monitoringSocket->all_received_answers[i].command==5)
+        {
+           element=monitoringSocket->all_received_answers[i];
+            // Аналогично куску из work_cycle
+            switch(element.command)
+            {
+                case 4:
+                    showAnswer(element,false);
+                    break;
+                case 5:
+                    showAnswer(element,true);
+                    break;
+                default:
+                    answer=processMessage(element);
+                    // Если добавление - перерисовываем картинку
+                    if(element.command==1)
+                    {
+                         showClients();
+                    }
+                    if(answer.worker_id!=-1)
+                    {
+                        sendMessage(answer.worker_id,answer);
+                        if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                            monitoringSocket->getMonitoringMessage();
+                    }
+                    break;
+            }
+
+        }
+        else
+            break;
+    }
+}
+
+void _server::loadSendOutputMessages() // Сообщения которые шли с сервера
+{
+    //monitoringSocket->clientsMessagesPull;
+    for(int i=0;i<TOTAL_ARBITERS;i++)
+    {
+        dispatcher_answer element,answer;
+        if(monitoringSocket->all_received_answers[i].command==2 ||
+            monitoringSocket->all_received_answers[i].command==2 ||
+            monitoringSocket->all_received_answers[i].command==4 ||
+            monitoringSocket->all_received_answers[i].command==5)
+        {
+            element=monitoringSocket->all_received_answers[i];
+            answer=disp->sendMessage(element,element.command);
+
+            sendMessage(answer.worker_id,answer);
+        }
+        else
+            break;
+    }
 }
 
 //---------------------------------------------------------------------------

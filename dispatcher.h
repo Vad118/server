@@ -53,8 +53,8 @@ public:
 ///functions
 private:
     dispatcher_answer addArbiter(dispatcher_answer received_answer);
-    dispatcher_answer sendMessage(dispatcher_answer received_answer,int command);
 public:
+    dispatcher_answer sendMessage(dispatcher_answer received_answer,int command);
     dispatcher(void);
     ~dispatcher(void);
     void start();

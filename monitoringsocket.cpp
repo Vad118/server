@@ -170,7 +170,8 @@ void MonitoringSocket::collectActorsAndTheirMessages()
             }
         }
         // Собираем пул сообщений
-        int count=0;
+        count=0;
+        finish=false;
         if(count_client_messages>0)
         {
             // Собираем сообщения
@@ -211,14 +212,28 @@ void MonitoringSocket::collectActorsAndTheirMessages()
 
 }
 
-void MonitoringSocket::save(dispatcher_answer *all_received_answers)
+void MonitoringSocket::save()
 {
     // Непосредственно сохранение
-    ofstream f(this->save_file.c_str(),ios::out | ios::binary);
-    f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+
+    ofstream f(this->save_file.c_str(),ios::in | ios::binary);
+    f.write((char *)&all_received_answers,sizeof(all_received_answers));
     f.write((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
+    f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+
+    /*ofstream f(this->save_file.c_str(),ios::out | ios::binary | ios::app);
     f.write((char *)&all_received_answers,sizeof(all_received_answers));
     f.close();
+    ofstream f2("save2.txt",ios::out | ios::binary | ios::app);
+    f2.write((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
+    f2.close();
+    ofstream f3("save3.txt",ios::out | ios::binary | ios::app);
+    f3.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+    f3.close();*/
+
+
+
+
 }
 
 void MonitoringSocket::draw()
@@ -253,14 +268,16 @@ void MonitoringSocket::draw()
 }
 
 
-void MonitoringSocket::loadFileAndSendActors()
+void MonitoringSocket::loadFile()
 {
     // Загрузка файла
-    saveActor saveActorsStruct[TOTAL_ARBITERS];
     ifstream f(this->save_file.c_str(),ios::in | ios::binary);
+    f.read((char *)&all_received_answers,sizeof(all_received_answers));
+    f.read((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
     f.read((char *)&saveActorsStruct,sizeof(saveActorsStruct));
     f.close();
 
+    // Отсылаем
 
 }
 

@@ -63,14 +63,17 @@ class MonitoringSocket:public QObject
     WSADATA WsaData;
     Monitoring *monitoring;
 
-    saveActor saveActorsStruct[TOTAL_ARBITERS];
-    dispatcher_answer clientsMessagesPull[TOTAL_ARBITERS];
     int total_saved_actors;
     int total_saved_pull_messages;
 
 public:
     int monitoringType;  // Соответствует sendStruct
     string save_file;
+
+    saveActor saveActorsStruct[TOTAL_ARBITERS];
+    dispatcher_answer clientsMessagesPull[TOTAL_ARBITERS];
+    dispatcher_answer all_received_answers[TOTAL_ARBITERS];
+
     MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring);
     int initialize();
     receiveStruct receiveMessage(int client_id);
@@ -82,9 +85,8 @@ public:
     void getMonitoringMessage();
     void draw();
     void collectActorsAndTheirMessages();    // Сбор актеров, функция вызывается для каждого клиента и заполняет saveActorsStruct
-    void save(dispatcher_answer *all_received_answers);
-
-    void loadFileAndSendActors();
+    void save();
+    void loadFile();
 signals:
     void showClientSignal(int x,int y,char* str);
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
