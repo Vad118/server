@@ -96,7 +96,7 @@ void MainWindow::main_serv_send()
 void MainWindow::on_SendButton_clicked()
 {
     monitoringSocketObj->sendCommand(2);
-    monitoringSocketObj->monitoringType=1;
+    monitoringSocketObj->monitoringType=2;
     main_serv_send();
 }
 /*

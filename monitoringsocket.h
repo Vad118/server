@@ -70,6 +70,9 @@ public:
     int monitoringType;  // Соответствует sendStruct
     string save_file;
 
+    char visible_arbiters[TOTAL_ARBITERS][10];
+    int total_visible_arbiters;
+
     saveActor saveActorsStruct[TOTAL_ARBITERS];
     dispatcher_answer clientsMessagesPull[TOTAL_ARBITERS];
     dispatcher_answer all_received_answers[TOTAL_ARBITERS];
@@ -87,6 +90,7 @@ public:
     void collectActorsAndTheirMessages();    // Сбор актеров, функция вызывается для каждого клиента и заполняет saveActorsStruct
     void save();
     void loadFile();
+    bool isVisibleArbiter(char *arbiter_id);
 signals:
     void showClientSignal(int x,int y,char* str);
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);

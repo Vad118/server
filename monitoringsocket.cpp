@@ -7,6 +7,7 @@ MonitoringSocket::MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring)
     save_file="save.txt";
     total_saved_actors=0;
     total_saved_pull_messages=0;
+    total_visible_arbiters=0;
 }
 
 int MonitoringSocket::initialize()
@@ -55,6 +56,7 @@ void MonitoringSocket::sendCommand(int command)
 receiveStruct MonitoringSocket::receiveMessage(int client_id)
 {
     receiveStruct answer;
+    answer.command=-1;
     char *p;
     fd_set readfds;
     struct timeval tv;
@@ -101,31 +103,30 @@ void MonitoringSocket::sendMessage(int client_id, sendStruct send_struct)
 void MonitoringSocket::getMonitoringMessage()
 {
     bool changed=false;
-    while(!changed)
+    receiveStruct msg;
+    msg.command=-1;
+    strcpy(msg.text,"");
+    for(int i=0;i<disp->nclients;i++)
     {
-        receiveStruct msg;
-        msg.command=-1;
-        strcpy(msg.text,"");
-        for(int i=0;i<disp->nclients;i++)
+        QMutex mutex;
+        mutex.lock();
+        msg=receiveMessage(i);
+        if(msg.command>=0 && msg.command<=100 && strcmp(msg.text,"")!=0)
         {
-            QMutex mutex;
-            mutex.lock();
-            msg=receiveMessage(i);
-            if(msg.command>=0 && strcmp(msg.text,"")!=0)
-            {
-                monitoring->traceObjectsList[i].type=msg.command;
-                strcpy(monitoring->traceObjectsList[i].text,msg.text);
-                strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_id);
-                changed=true;
-            }
-            mutex.unlock();
+            monitoring->traceObjectsList[i].type=msg.command;
+            strcpy(monitoring->traceObjectsList[i].text,msg.text);
+            strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_id);
+            strcpy(visible_arbiters[total_visible_arbiters],msg.arbiter_id);
+            total_visible_arbiters++;
+            changed=true;
         }
-        if(changed)
-        {
-            draw();
-        }
-
+        mutex.unlock();
     }
+    if(changed)
+    {
+         draw();
+    }
+
 }
 
 void MonitoringSocket::collectActorsAndTheirMessages()
@@ -236,9 +237,24 @@ void MonitoringSocket::save()
 
 }
 
+bool MonitoringSocket::isVisibleArbiter(char* arbiter_id)
+{
+    bool visible=false;
+    if(monitoringType>0)
+    {
+        for(int i=0;i<total_visible_arbiters;i++)
+            if(strcmp(arbiter_id,visible_arbiters[i])==0)
+                visible=true;
+    }
+    else
+        visible=true;
+
+    return visible;
+}
+
 void MonitoringSocket::draw()
 {
-    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringSocket::draw();
     QMutex mutex;
     mutex.lock();
     monitoring->getClientsArray();
@@ -249,11 +265,15 @@ void MonitoringSocket::draw()
     }
     for(int i=0;i<monitoring->arbitersListCount;i++)
     {
-        emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
+        if(isVisibleArbiter(monitoring->arbitersList[i].arbiter_id))
+        {
+            emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
                                monitoring->arbitersList[i].position_y,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_x,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_y,
                                monitoring->arbitersList[i].arbiter_id);
+        }
+
         if(monitoring->traceObjectsList[i].type!=-1)
         {
             emit paintTraceObjectSignal(monitoring->traceObjectsList[i].position_x,

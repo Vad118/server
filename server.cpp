@@ -251,6 +251,8 @@ void _server::work_cycle()
            for(int i=0;i<getTotalClients();i++)
            {
                received_answer=receiveMessage(i);
+               if(monitoringSocket->monitoringType>=1 && received_answer.command!=9) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                    monitoringSocket->getMonitoringMessage();
                if(received_answer.command!=-1)
                {
                    switch(received_answer.command)
@@ -265,23 +267,19 @@ void _server::work_cycle()
                        default:
                            answer=processMessage(received_answer);
                            // Если добавление - перерисовываем картинку
-                           if(received_answer.command==1)
-                           {
-                                showClients();
-                           }
+                           showClients();
                            if(answer.worker_id!=-1)
                            {
-                               sendMessage(answer.worker_id,answer);
-                               if(monitoringSocket->monitoringType==4) // Если сохранение
+                               if(received_answer.command!=9)
+                                   sendMessage(answer.worker_id,answer);
+                               if(monitoringSocket->monitoringType==4 && received_answer.command==9) // Если сохранение
                                {
-                                   monitoringSocket->getMonitoringMessage();
+                                   //monitoringSocket->getMonitoringMessage();
                                    monitoringSocket->collectActorsAndTheirMessages();
                                    saving=true;
                                    monitoringSocket->all_received_answers[total_received_answers]=received_answer;
                                    total_received_answers++;
                                }
-                               else if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
-                                   monitoringSocket->getMonitoringMessage();
                            }
                            break;
                    }
@@ -321,7 +319,7 @@ void _server::collect_all_received_answers(int &total_received_answers)
 }
 
 void _server::showClients()
-{    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+{    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringSocket::draw();
     QMutex mutex;
     mutex.lock();
     monitoring->getClientsArray();
@@ -332,11 +330,14 @@ void _server::showClients()
     }
     for(int i=0;i<monitoring->arbitersListCount;i++)
     {
-        emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
+        if(monitoringSocket->isVisibleArbiter(monitoring->arbitersList[i].arbiter_id))
+        {
+            emit paintArbiterSignal(monitoring->arbitersList[i].position_x,
                                monitoring->arbitersList[i].position_y,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_x,
                                monitoring->clientsList[monitoring->arbitersList[i].clientsListId].position_y,
                                monitoring->arbitersList[i].arbiter_id);
+        }
         if(monitoring->traceObjectsList[i].type!=-1)
         {
             emit paintTraceObjectSignal(monitoring->traceObjectsList[i].position_x,
@@ -461,15 +462,28 @@ void _server::loadSendOutputMessages() // Сообщения которые шл
     for(int i=0;i<TOTAL_ARBITERS;i++)
     {
         dispatcher_answer element,answer;
-        if(monitoringSocket->all_received_answers[i].command==2 ||
-            monitoringSocket->all_received_answers[i].command==2 ||
-            monitoringSocket->all_received_answers[i].command==4 ||
-            monitoringSocket->all_received_answers[i].command==5)
+        if(monitoringSocket->clientsMessagesPull[i].command==1 ||
+            monitoringSocket->clientsMessagesPull[i].command==2 ||
+            monitoringSocket->clientsMessagesPull[i].command==4 ||
+            monitoringSocket->clientsMessagesPull[i].command==5)
         {
-            element=monitoringSocket->all_received_answers[i];
+            element=monitoringSocket->clientsMessagesPull[i];
+            answer=processMessage(element);
+            // Если добавление - перерисовываем картинку
+            if(element.command==1)
+            {
+                 showClients();
+            }
+            if(answer.worker_id!=-1)
+            {
+                sendMessage(answer.worker_id,answer);
+                if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+                    monitoringSocket->getMonitoringMessage();
+            }
+            /*element=monitoringSocket->clientsMessagesPull[i];
             answer=disp->sendMessage(element,element.command);
 
-            sendMessage(answer.worker_id,answer);
+            sendMessage(answer.worker_id,answer);*/
         }
         else
             break;
@@ -542,7 +556,7 @@ void MultiThreadServerPart::checkForNewClients()
 
 void MultiThreadServerPart::showClients()
 {
-    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringReceiveMultithread::draw();
+    // Одинаковые: _server::showClients(), MultithreadServerPart::showClients(), MonitoringSocket::draw();
     QMutex mutex;
     mutex.lock();
     server->monitoring->getClientsArray();
@@ -553,11 +567,15 @@ void MultiThreadServerPart::showClients()
     }
     for(int i=0;i<server->monitoring->arbitersListCount;i++)
     {
-        emit paintArbiterSignal(server->monitoring->arbitersList[i].position_x,
+        if(server->monitoringSocket->isVisibleArbiter(server->monitoring->arbitersList[i].arbiter_id))
+        {
+            emit paintArbiterSignal(server->monitoring->arbitersList[i].position_x,
                                server->monitoring->arbitersList[i].position_y,
                                server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_x,
                                server->monitoring->clientsList[server->monitoring->arbitersList[i].clientsListId].position_y,
                                server->monitoring->arbitersList[i].arbiter_id);
+        }
+
         if(server->monitoring->traceObjectsList[i].type!=-1)
         {
             emit paintTraceObjectSignal(server->monitoring->traceObjectsList[i].position_x,
