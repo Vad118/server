@@ -31,6 +31,10 @@ private slots:
 
     void on_pushButton_4_clicked();
 
+    void on_checkBox_clicked();
+
+    void on_pushButton_2_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -46,6 +50,7 @@ private:
     void main_serv_init();
     void monitoring_serv_init();
     void main_serv_send();
+    void setMonitoringType();
 
     void TEST_GENERATE_DSP_TABLE();
 };

@@ -116,8 +116,11 @@ void MonitoringSocket::getMonitoringMessage()
             monitoring->traceObjectsList[i].type=msg.command;
             strcpy(monitoring->traceObjectsList[i].text,msg.text);
             strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_id);
-            strcpy(visible_arbiters[total_visible_arbiters],msg.arbiter_id);
-            total_visible_arbiters++;
+            if(msg.command==0)
+            {
+                strcpy(visible_arbiters[total_visible_arbiters],msg.arbiter_id);
+                total_visible_arbiters++;
+            }
             changed=true;
         }
         mutex.unlock();

@@ -181,7 +181,10 @@ void _server::send_file(int client_id)
 
 void _server::clearArbiters()
 {
+    for(int i=0;i<monitoring->arbitersListCount;i++)
+        monitoring->traceObjectsList[i].type=-1;
     disp->clearArbiters();
+    monitoring->arbitersListCount=0;
 }
 
 void _server::showAnswer(dispatcher_answer received_answer, bool final)
@@ -267,6 +270,11 @@ void _server::work_cycle()
                        default:
                            answer=processMessage(received_answer);
                            // Если добавление - перерисовываем картинку
+                           if(monitoringSocket->monitoringType==0)
+                           {
+                               strcpy(monitoringSocket->visible_arbiters[monitoringSocket->total_visible_arbiters],received_answer.arbiter_id);
+                               monitoringSocket->total_visible_arbiters++;
+                           }
                            showClients();
                            if(answer.worker_id!=-1)
                            {

@@ -76,6 +76,9 @@
      <string>Трассировка</string>
     </property>
     <widget class="QCheckBox" name="checkBox_2">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>10</x>

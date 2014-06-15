@@ -95,8 +95,8 @@ void MainWindow::main_serv_send()
 
 void MainWindow::on_SendButton_clicked()
 {
-    monitoringSocketObj->sendCommand(2);
-    monitoringSocketObj->monitoringType=2;
+    graphics->clear();
+    setMonitoringType();
     main_serv_send();
 }
 /*
@@ -150,28 +150,42 @@ void MainWindow::TEST_GENERATE_DSP_TABLE()
 
 }
 
+void MainWindow::on_checkBox_clicked()
+{
+    if(ui->checkBox->isChecked())
+        ui->checkBox_2->setEnabled(true);
+    else
+    {
+        ui->checkBox_2->setEnabled(false);
+        ui->checkBox_2->setChecked(false);
+    }
+    setMonitoringType();
+}
+
 void MainWindow::on_checkBox_2_clicked()
 {
     if(ui->checkBox_2->isChecked())
         ui->pushButton->setEnabled(true);
     else
         ui->pushButton->setEnabled(false);
+    setMonitoringType();
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_clicked() // След.Шаг
 {
     monitoringSocketObj->sendCommand(3);
     monitoringSocketObj->monitoringType=2;
 }
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_pushButton_3_clicked()  // Сохранение
 {
     monitoringSocketObj->sendCommand(4);
     monitoringSocketObj->monitoringType=4;
 }
 
-void MainWindow::on_pushButton_4_clicked()
+void MainWindow::on_pushButton_4_clicked()  // Загрузка
 {
+    graphics->clear();
     server->clearArbiters();
     monitoringSocketObj->loadFile();
     server->sendScriptToClients(true);
@@ -179,4 +193,38 @@ void MainWindow::on_pushButton_4_clicked()
     server->loadSendOutputMessages();
     server->loadInputMessages();
     server->start();
+    setMonitoringType();
+}
+
+void MainWindow::setMonitoringType()
+{
+    bool monitoring=false;
+    bool tracing=false;
+    if(ui->checkBox->isChecked())
+        monitoring=true;
+    if(ui->checkBox_2->isChecked())
+        tracing=true;
+
+    if(!monitoring && !tracing)
+    {
+        monitoringSocketObj->sendCommand(0);
+        monitoringSocketObj->monitoringType=0;
+    }
+    else if(monitoring && !tracing)
+    {
+        monitoringSocketObj->sendCommand(1);
+        monitoringSocketObj->monitoringType=1;
+    }
+    else if(monitoring && tracing)
+    {
+        monitoringSocketObj->sendCommand(2);
+        monitoringSocketObj->monitoringType=2;
+    }
+}
+
+
+void MainWindow::on_pushButton_2_clicked()  // Пауза
+{
+    monitoringSocketObj->sendCommand(2);
+    monitoringSocketObj->monitoringType=2;
 }
