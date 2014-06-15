@@ -35,6 +35,10 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void on_action_3_triggered();
+
+    void on_MainWindow_destroyed();
+
 private:
     Ui::MainWindow *ui;
 
@@ -44,6 +48,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocketObj;
     MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
+    MultiThreadServerPart *multiThreadServPart;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 
@@ -51,6 +56,8 @@ private:
     void monitoring_serv_init();
     void main_serv_send();
     void setMonitoringType();
+    void clickExit();
+    void closeEvent(QCloseEvent *event);
 
     void TEST_GENERATE_DSP_TABLE();
 };

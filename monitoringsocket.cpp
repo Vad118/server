@@ -40,6 +40,8 @@ int MonitoringSocket::initialize()
 void MonitoringSocket::stop()
 {
     closesocket(monitorSocket);
+    for(int i=0;i<disp->nclients;i++)
+        closesocket(disp->table[i].clientMonitoringSocket);
     WSACleanup();
 }
 

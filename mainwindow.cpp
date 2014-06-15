@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
         // Запуск многопоточных классов
         // Поток 2 - CheckNewClients на основной сокет
-        MultiThreadServerPart *multiThreadServPart=new MultiThreadServerPart();
+        multiThreadServPart=new MultiThreadServerPart();
         multiThreadServPart->init(server);
         QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
         QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
@@ -93,10 +93,16 @@ void MainWindow::main_serv_send()
     server->start();
 }
 
-void MainWindow::on_SendButton_clicked()
+void MainWindow::on_SendButton_clicked()  // Запуск
 {
     graphics->clear();
     setMonitoringType();
+    if(monitoringSocketObj->monitoringType==2)
+    {
+        monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
+        monitoringSocketObj->sendCommand(3);      // Пропускаем запуск скрипта шаг.
+        monitoringSocketObj->sendCommand(3);      // Первый шаг.
+    }
     main_serv_send();
 }
 /*
@@ -194,6 +200,11 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
     server->loadInputMessages();
     server->start();
     setMonitoringType();
+    if(monitoringSocketObj->monitoringType==2)
+    {
+        monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
+        monitoringSocketObj->sendCommand(3);      // Первый шаг.
+    }
 }
 
 void MainWindow::setMonitoringType()
@@ -227,4 +238,31 @@ void MainWindow::on_pushButton_2_clicked()  // Пауза
 {
     monitoringSocketObj->sendCommand(2);
     monitoringSocketObj->monitoringType=2;
+}
+
+void MainWindow::clickExit()
+{
+    server->stop();
+    monitoringSocketObj->sendCommand(3);
+    monitoringSocketObj->stop();
+    multiThreadServPart->terminate();
+    monitoringCheckNewMultithread->terminate();
+}
+
+void MainWindow::on_action_3_triggered()   // Выход
+{
+    clickExit();
+    this->close();
+}
+
+void MainWindow::on_MainWindow_destroyed()
+{
+    clickExit();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    //Здесь код
+    clickExit();
+    event->accept();
 }

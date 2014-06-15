@@ -162,7 +162,7 @@
      <string>Файл</string>
     </property>
     <addaction name="action"/>
-    <addaction name="action_2"/>
+    <addaction name="action_3"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -173,6 +173,11 @@
    </property>
   </action>
   <action name="action_2">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
+  <action name="action_3">
    <property name="text">
     <string>Выход</string>
    </property>

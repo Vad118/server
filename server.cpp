@@ -54,6 +54,15 @@ int _server::initialize()
 void _server::stop()
 {
     closesocket(ServerSocket);
+    for(int i=0;i<getTotalClients();i++)
+    {
+        dispatcher_answer d_a;
+        d_a.command=10;
+        char *pBuff = new char[sizeof(dispatcher_answer)];
+        memcpy(pBuff,&d_a,sizeof(dispatcher_answer));
+        send(disp->table[i].clientSocket,pBuff, sizeof(dispatcher_answer), 0);
+        closesocket(disp->table[i].clientSocket);
+    }
     WSACleanup();
 }
 
