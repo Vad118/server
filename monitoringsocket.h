@@ -50,6 +50,7 @@ struct receiveStruct
     int command;
     char text[STR_SIZE];
     char arbiter_id[STR_SIZE];
+    char arbiter_parent[10];
 };
 
 class MonitoringSocket:public QObject

@@ -25,16 +25,11 @@ struct dispatcher_answer
     // 10 - сервер отключился
     int worker_id; //кому отправляем
     char arbiter_id[STR_SIZE]; //Арбитр, которому отправляем
-    //actor actor_create_msg; //Параметры для передачи в create\become
+    char arbiter_parent[10]; // Арбитр, который отправляет
 
     //Параметры actor
     char actor_behavior[STR_SIZE];
     char actor_parameters[5][50]; //Параметр для передачи в send
-    /*char actor_addressat[STR_SIZE];
-    int  actor_val;
-    bool actor_isValSet;*/
-    //string actor_behavior;
-    //string actor_parameters[100];
     int actor_par_count;
     char script[1024];
 };

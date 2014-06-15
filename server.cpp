@@ -263,7 +263,7 @@ void _server::work_cycle()
            for(int i=0;i<getTotalClients();i++)
            {
                received_answer=receiveMessage(i);
-               if(monitoringSocket->monitoringType>=1 && received_answer.command!=9) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
+               if(monitoringSocket->monitoringType>=1 && received_answer.command!=9)
                     monitoringSocket->getMonitoringMessage();
                if(received_answer.command!=-1)
                {
@@ -310,7 +310,6 @@ void _server::work_cycle()
                monitoringSocket->save();
            }
        }
-stop();
 }
 
 void _server::collect_all_received_answers(int &total_received_answers)

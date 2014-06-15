@@ -106,17 +106,10 @@ dispatcher_answer dispatcher::addArbiter(dispatcher_answer receiver_answer)
     for(int i=0;i<answer.actor_par_count;i++)
         strcpy(answer.actor_parameters[i],receiver_answer.actor_parameters[i]);
     strcpy(answer.arbiter_id,receiver_answer.arbiter_id);
+    strcpy(answer.arbiter_parent,receiver_answer.arbiter_parent);
     strcpy(answer.actor_behavior,receiver_answer.actor_behavior);
-    //answer.actor_parameter=receiver_answer.actor_parameter;
-    /*
-    strcpy(answer.actor_addressat,receiver_answer.actor_addressat);
-    strcpy(answer.actor_behavior,receiver_answer.actor_behavior);
-    answer.actor_isValSet=receiver_answer.actor_isValSet;
-    answer.actor_val=receiver_answer.actor_val;
-    answer.actor_parameter=receiver_answer.actor_parameter;*/
 
     return answer;
-    //return createAnswer(table[id].worker_addr,1,table[id].arbiters,);
 }
 dispatcher_answer dispatcher::sendMessage(dispatcher_answer receiver_answer,int command)
 {
@@ -147,19 +140,12 @@ dispatcher_answer dispatcher::sendMessage(dispatcher_answer receiver_answer,int 
     answer.worker_id=worker_id;
     answer.command=command;
     strcpy(answer.arbiter_id,receiver_answer.arbiter_id);
-    /*strcpy(answer.actor_addressat,received_answer.actor_addressat);
-    strcpy(answer.actor_behavior,received_answer.actor_behavior);
-    answer.actor_isValSet=received_answer.actor_isValSet;
-    answer.actor_val=received_answer.actor_val;
-    answer.actor_parameter=received_answer.actor_parameter;*/
+    strcpy(answer.arbiter_parent,receiver_answer.arbiter_parent);
     strcpy(answer.actor_behavior,receiver_answer.actor_behavior);
-    //answer.actor_parameter=receiver_answer.actor_parameter;
-    //answer.actor_behavior=receiver_answer.actor_behavior;
     answer.actor_par_count=receiver_answer.actor_par_count;
     for(int i=0;i<answer.actor_par_count;i++)
         strcpy(answer.actor_parameters[i],receiver_answer.actor_parameters[i]);
     return answer;
-    //return createAnswer(worker_id,2,arbiter_id,message_text);
 }
 
 
