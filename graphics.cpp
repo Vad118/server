@@ -84,10 +84,34 @@ void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, cha
             pen.setColor(Qt::blue);
             break;
     }
+    if(x!=0 && y!=0)
+    {
+        PalletScene->addRect(x,y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
+        QGraphicsTextItem* io = new QGraphicsTextItem;
+        io->setPos(x,y);
+        io->setPlainText(text);
+        PalletScene->addItem(io);
+    }
+    else   // Нет арбитра - когда инициализация
+    {
+        int message_x=x;
+        int message_y=y+60;
+        int init_x=x;
+        int init_y=y;
 
-    PalletScene->addRect(x,y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
-    QGraphicsTextItem* io = new QGraphicsTextItem;
-    io->setPos(x,y);
-    io->setPlainText(text);
-    PalletScene->addItem(io);
+        PalletScene->addRect(message_x,message_y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
+        QGraphicsTextItem* io2 = new QGraphicsTextItem;
+        io2->setPos(message_x,message_y);
+        io2->setPlainText(text);
+        PalletScene->addItem(io2);
+
+        pen.setColor(Qt::black);
+        PalletScene->addRect(init_x,init_y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
+        QGraphicsTextItem* io3 = new QGraphicsTextItem;
+        io3->setPos(init_x,init_y);
+        io3->setPlainText("createAndInitActors");
+        PalletScene->addItem(io3);
+
+        PalletScene->addLine(init_x+CLIENT_RECT_WIDTH/2,init_y+CLIENT_RECT_HEIGHT,message_x+CLIENT_RECT_WIDTH/2,message_y,pen);
+    }
 }

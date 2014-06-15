@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <string>
 
-enum{CLIENT_RECT_WIDTH=50,
+enum{CLIENT_RECT_WIDTH=55,
      CLIENT_RECT_HEIGHT=20,
      SERVER_RECT_WIDTH=50,
      SERVER_RECT_HEIGHT=20,
