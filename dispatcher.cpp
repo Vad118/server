@@ -64,6 +64,7 @@ dispatcher_answer dispatcher::addWorker(int worker_id, SOCKET clientSocket)
     table[nclients].clientMonitoringSocket=NULL;
     strcpy(table[nclients].arbiters,"|");
     table[nclients].arbiters_count=0;
+    table[nclients].active=true;
     nclients++;
     //return createAnswer();
 
@@ -80,34 +81,39 @@ dispatcher_answer dispatcher::addArbiter(dispatcher_answer receiver_answer)
     dispatcher_answer answer;
     int workers[TOTAL_CLIENTS];
     //ищем работника с минимальным количеством арбитров на нем
-    int id=0;
-    int min=table[id].arbiters_count;
-    for(int i=1;i<nclients;i++)
+    int id=-1;
+    int min=TOTAL_ARBITERS;
+    for(int i=0;i<nclients;i++)
     {
-        if(table[i].arbiters_count<min)
+        if(table[i].arbiters_count<min && table[i].active)
         {
             min=table[i].arbiters_count;
             id=i;
         }
     }
-    //Добавляем нового арбитра к работнику
-    table[id].arbiters_count++;
-    char tmp[STR_SIZE];
-    char arbiter_id[STR_SIZE];
-    strcpy(arbiter_id,receiver_answer.arbiter_id);
-    strcpy(tmp,"|");
-    strcat(table[id].arbiters,strcat(trim(arbiter_id),tmp));
+    if(id!=-1)
+    {
+        //Добавляем нового арбитра к работнику
+        table[id].arbiters_count++;
+        char tmp[STR_SIZE];
+        char arbiter_id[STR_SIZE];
+        strcpy(arbiter_id,receiver_answer.arbiter_id);
+        strcpy(tmp,"|");
+        strcat(table[id].arbiters,strcat(trim(arbiter_id),tmp));
 
-    //Заполняем структуру ответа
-    answer.worker_id=id;
-    answer.command=1;
-    //answer.actor_behavior=receiver_answer.actor_behavior;
-    answer.actor_par_count=receiver_answer.actor_par_count;
-    for(int i=0;i<answer.actor_par_count;i++)
-        strcpy(answer.actor_parameters[i],receiver_answer.actor_parameters[i]);
-    strcpy(answer.arbiter_id,receiver_answer.arbiter_id);
-    strcpy(answer.arbiter_parent,receiver_answer.arbiter_parent);
-    strcpy(answer.actor_behavior,receiver_answer.actor_behavior);
+        //Заполняем структуру ответа
+        answer.worker_id=id;
+        answer.command=1;
+        //answer.actor_behavior=receiver_answer.actor_behavior;
+        answer.actor_par_count=receiver_answer.actor_par_count;
+        for(int i=0;i<answer.actor_par_count;i++)
+            strcpy(answer.actor_parameters[i],receiver_answer.actor_parameters[i]);
+        strcpy(answer.arbiter_id,receiver_answer.arbiter_id);
+        strcpy(answer.arbiter_parent,receiver_answer.arbiter_parent);
+        strcpy(answer.actor_behavior,receiver_answer.actor_behavior);
+    }
+    else
+        answer.command=-1;
 
     return answer;
 }

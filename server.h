@@ -28,7 +28,6 @@ class _server:public QThread
     Q_OBJECT
 friend class MultiThreadServerPart;
 private:
-    dispatcher *disp;
     SOCKET ServerSocket;
     WSADATA WsaData;
     int idclient;
@@ -38,6 +37,9 @@ private:
 
     void collect_all_received_answers(int &total_received_answers);
 public:
+    dispatcher *disp;
+    QList<QTreeWidgetItem *> configuratorItems;
+
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
     int initialize();
     void stop();
@@ -64,6 +66,7 @@ signals:
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
     void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void graphicsClear();
+    void paintConfigurator();
 
 };
 

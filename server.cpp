@@ -561,6 +561,10 @@ void MultiThreadServerPart::checkForNewClients()
                     //sprintf(srv_resp,"%d",idclient);
                     send(clientSocket, srv_resp, STR_SIZE, 0);
                     server->disp->addWorker(server->idclient,clientSocket);
+                    char tmp[STR_SIZE];
+                    itoa(server->idclient,tmp,10);
+                    server->configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
+                    emit server->paintConfigurator();
                     server->idclient++;
                     showClients();
                     mutex.unlock();

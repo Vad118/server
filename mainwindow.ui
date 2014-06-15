@@ -159,16 +159,6 @@
     <property name="title">
      <string>Конфигурация</string>
     </property>
-    <widget class="QTreeView" name="treeView">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>256</width>
-       <height>221</height>
-      </rect>
-     </property>
-    </widget>
     <widget class="QPushButton" name="pushButton_5">
      <property name="enabled">
       <bool>false</bool>
@@ -200,6 +190,24 @@
      <property name="text">
       <string>Отключить</string>
      </property>
+    </widget>
+    <widget class="QTreeWidget" name="treeWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>256</width>
+       <height>192</height>
+      </rect>
+     </property>
+     <property name="columnCount">
+      <number>1</number>
+     </property>
+     <column>
+      <property name="text">
+       <string>id работника</string>
+      </property>
+     </column>
     </widget>
    </widget>
   </widget>

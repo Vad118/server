@@ -15,6 +15,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+public slots:
+    void paintConfigurator();
 
 private slots:
     void on_SendButton_clicked();
@@ -39,6 +41,14 @@ private slots:
 
     void on_MainWindow_destroyed();
 
+    void on_pushButton_7_clicked();
+
+    void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
+
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_6_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -60,6 +70,8 @@ private:
     void closeEvent(QCloseEvent *event);
 
     void TEST_GENERATE_DSP_TABLE();
+
+    int configuratorChoosenId;
 };
 
 

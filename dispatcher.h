@@ -45,6 +45,7 @@ public:
         int clientMonitoringSocketStatus;   // 0 - обычный режим, 1 - прием save сообщений
         char arbiters[STR_SIZE];
         int arbiters_count;
+        bool active;
     }table[TOTAL_CLIENTS];
     int nclients;
 ///functions

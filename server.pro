@@ -18,16 +18,14 @@ SOURCES += main.cpp\
     server.cpp \
     graphics.cpp \
     monitoring.cpp \
-    monitoringsocket.cpp \
-    tracer.cpp
+    monitoringsocket.cpp
 
 HEADERS  += mainwindow.h \
     dispatcher.h \
     server.h \
     graphics.h \
     monitoring.h \
-    monitoringsocket.h \
-    tracer.h
+    monitoringsocket.h
 
 
 FORMS    += mainwindow.ui

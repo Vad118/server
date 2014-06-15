@@ -8,10 +8,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
     {
         ui->setupUi(this);
+        configuratorChoosenId=-1;
         graphics=new _graphics(ui->textEdit,ui->graphicsView->width()-10,ui->graphicsView->height()-10);
         graphics->clear();
         ui->graphicsView->setScene(graphics->PalletScene);
-        dsp=new dispatcher(); // TEST
+        dsp=new dispatcher();
         monitoring=new Monitoring(dsp,graphics);
         monitoringSocketObj=new MonitoringSocket(dsp,monitoring);
         QObject::connect(monitoringSocketObj, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
@@ -24,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
         QObject::connect(server, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         QObject::connect(server, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
         QObject::connect(server, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
+
+        QObject::connect(server, SIGNAL(paintConfigurator()), this, SLOT(paintConfigurator()));
 
         monitoring_serv_init();
         main_serv_init();
@@ -43,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent) :
         monitoringCheckNewMultithread->init(monitoringSocketObj);
         monitoringCheckNewMultithread->start();
 
-        //TEST_GENERATE_DSP_TABLE();
 
     }
 
@@ -265,4 +267,49 @@ void MainWindow::closeEvent(QCloseEvent *event)
     //Здесь код
     clickExit();
     event->accept();
+}
+
+void MainWindow::on_pushButton_7_clicked()
+{
+
+}
+
+void MainWindow::paintConfigurator()
+{
+    ui->treeWidget->insertTopLevelItems(0, server->configuratorItems);
+}
+
+void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)  // Выбор работника в списке конфигурации
+{
+    configuratorChoosenId=item->text(column).toInt();
+    if(server->disp->table[configuratorChoosenId].active==true)
+    {
+        ui->pushButton_5->setEnabled(false);
+        ui->pushButton_6->setEnabled(true);
+    }
+    else
+    {
+        ui->pushButton_5->setEnabled(true);
+        ui->pushButton_6->setEnabled(false);
+    }
+}
+
+void MainWindow::on_pushButton_5_clicked()   // Конфигурация On
+{
+    if(configuratorChoosenId!=-1)
+    {
+        server->disp->table[configuratorChoosenId].active=true;
+        ui->pushButton_5->setEnabled(false);
+        ui->pushButton_6->setEnabled(true);
+    }
+}
+
+void MainWindow::on_pushButton_6_clicked()   // Конфигурация Off
+{
+    if(configuratorChoosenId!=-1)
+    {
+        server->disp->table[configuratorChoosenId].active=false;
+        ui->pushButton_5->setEnabled(true);
+        ui->pushButton_6->setEnabled(false);
+    }
 }
