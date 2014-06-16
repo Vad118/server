@@ -115,3 +115,8 @@ void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, cha
         PalletScene->addLine(init_x+CLIENT_RECT_WIDTH/2,init_y+CLIENT_RECT_HEIGHT,message_x+CLIENT_RECT_WIDTH/2,message_y,pen);
     }
 }
+
+void _graphics::showClientDisconnectedError()
+{
+    textEdit->append("ERROR: Client disconnected");
+}

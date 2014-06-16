@@ -39,6 +39,8 @@ private:
 public:
     dispatcher *disp;
     QList<QTreeWidgetItem *> configuratorItems;
+    bool serverGlobalQuit;
+    string file_script;
 
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
     int initialize();
@@ -67,6 +69,8 @@ signals:
     void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void graphicsClear();
     void paintConfigurator();
+    void showClientDisconnectedError();
+    void globalQuit();
 
 };
 
@@ -75,6 +79,7 @@ class MultiThreadServerPart:public QThread
 {
     Q_OBJECT
     _server *server;
+    bool global_quit;
 
     void showClients();
 protected:
@@ -87,6 +92,8 @@ signals:
     void paintArbiterSignal(int x, int y, int client_x, int client_y, char* text);
     void paintTraceObjectSignal(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void graphicsClear();
+public slots:
+    void globalQuit();
 
 };
 

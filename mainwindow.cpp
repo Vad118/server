@@ -27,9 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
         QObject::connect(server, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
 
         QObject::connect(server, SIGNAL(paintConfigurator()), this, SLOT(paintConfigurator()));
+        QObject::connect(server, SIGNAL(showClientDisconnectedError()), graphics, SLOT(showClientDisconnectedError()));
 
         monitoring_serv_init();
         main_serv_init();
+        server->start();
 
         // Запуск многопоточных классов
         // Поток 2 - CheckNewClients на основной сокет
@@ -39,11 +41,13 @@ MainWindow::MainWindow(QWidget *parent) :
         QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         QObject::connect(multiThreadServPart, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
         QObject::connect(multiThreadServPart, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
+        QObject::connect(server, SIGNAL(globalQuit()), multiThreadServPart, SLOT(globalQuit()));
         multiThreadServPart->start();
 
         // Поток 3 - CheckNewClients на второй сокет
         monitoringCheckNewMultithread=new MonitoringCheckNewMultithread();
         monitoringCheckNewMultithread->init(monitoringSocketObj);
+        QObject::connect(server, SIGNAL(globalQuit()), monitoringCheckNewMultithread, SLOT(globalQuit()));
         monitoringCheckNewMultithread->start();
 
 
@@ -92,20 +96,29 @@ void MainWindow::main_serv_send()
 {
     server->clearArbiters();
     server->sendScriptToClients();
-    server->start();
+    //server->start();
 }
 
 void MainWindow::on_SendButton_clicked()  // Запуск
 {
-    graphics->clear();
-    setMonitoringType();
-    if(monitoringSocketObj->monitoringType==2)
+    //QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    QString file_script="C:\\QTProjects\\diplom_server\\server\\script.lua";
+    if(file_script!="")
     {
-        monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
-        monitoringSocketObj->sendCommand(3);      // Пропускаем запуск скрипта шаг.
-        monitoringSocketObj->sendCommand(3);      // Первый шаг.
+        server->file_script=file_script.toStdString();
+        graphics->clear();
+        if(server->disp->nclients>0)
+        {
+            setMonitoringType();
+            if(monitoringSocketObj->monitoringType==2)
+            {
+                monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
+                monitoringSocketObj->sendCommand(3);      // Пропускаем запуск скрипта шаг.
+                monitoringSocketObj->sendCommand(3);      // Первый шаг.
+            }
+            main_serv_send();
+        }
     }
-    main_serv_send();
 }
 /*
 void MainWindow::on_pushButton_clicked()
@@ -200,7 +213,7 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
     server->loadCreateActors();
     server->loadSendOutputMessages();
     server->loadInputMessages();
-    server->start();
+    //server->start();
     setMonitoringType();
     if(monitoringSocketObj->monitoringType==2)
     {
@@ -244,11 +257,12 @@ void MainWindow::on_pushButton_2_clicked()  // Пауза
 
 void MainWindow::clickExit()
 {
+    server->serverGlobalQuit=true;
     server->stop();
     monitoringSocketObj->sendCommand(3);
     monitoringSocketObj->stop();
-    multiThreadServPart->terminate();
-    monitoringCheckNewMultithread->terminate();
+    multiThreadServPart->wait();
+    monitoringCheckNewMultithread->wait();
 }
 
 void MainWindow::on_action_3_triggered()   // Выход
@@ -269,14 +283,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-void MainWindow::on_pushButton_7_clicked()
-{
-
-}
-
 void MainWindow::paintConfigurator()
 {
-    ui->treeWidget->insertTopLevelItems(0, server->configuratorItems);
+    QMutex mutex;
+    mutex.lock();
+    ui->treeWidget->clear();
+    ui->treeWidget->addTopLevelItems(server->configuratorItems);
+    mutex.unlock();
 }
 
 void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)  // Выбор работника в списке конфигурации

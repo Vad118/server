@@ -103,9 +103,12 @@ class MonitoringCheckNewMultithread: public QThread
 {
     Q_OBJECT
     MonitoringSocket *monitoringSocketObj;
+    bool global_quit;
 protected:
     void run();
 public:
     void init(MonitoringSocket *monitoringSocket);
+public slots:
+    void globalQuit();
 };
 #endif // MONITORINGSOCKET_H

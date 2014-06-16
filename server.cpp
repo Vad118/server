@@ -6,6 +6,7 @@ _server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, 
     this->monitoring=monitoring;
     this->disp=disp;
     this->monitoringSocket=monitoringSocket;
+    serverGlobalQuit=false;
 }
 
 int _server::initialize()
@@ -53,6 +54,7 @@ int _server::initialize()
 
 void _server::stop()
 {
+    emit globalQuit();
     closesocket(ServerSocket);
     for(int i=0;i<getTotalClients();i++)
     {
@@ -121,7 +123,8 @@ void _server::clientDisconnected(int client_id)
         disp->table[client_id]=disp->table[disp->nclients-1];
     }
     disp->nclients--;
-    //showClients();
+    showClients();
+    emit paintConfigurator();
 }
 
 
@@ -157,7 +160,7 @@ int _server::getTotalClients()
 void _server::send_file(int client_id)
 {
     //FILE *in = fopen("C:\\practise\\server\\Debug\\script.lua", "r");
-    FILE *in = fopen("C:\\QTProjects\\diplom_server\\server\\script.lua", "r");
+    FILE *in = fopen(file_script.c_str(), "r");
     SOCKET clientSocket=disp->table[client_id].clientSocket;
     char buffer[1024];
     size_t b=0;
@@ -254,7 +257,7 @@ void _server::work_cycle()
       bool finished=false;
       dispatcher_answer all_received_answers[TOTAL_ARBITERS];
       int total_received_answers=0;
-      while (!finished)
+      while (!finished && !serverGlobalQuit)
       {
            //checkForNewClients();
            //+++++++++
@@ -275,6 +278,11 @@ void _server::work_cycle()
                        case 5:
                            showAnswer(received_answer,true);
                            finished=true;
+                           break;
+                       case 10:
+                           clientDisconnected(i);
+                           finished=true;
+                           emit showClientDisconnectedError();
                            break;
                        default:
                            answer=processMessage(received_answer);
@@ -310,6 +318,7 @@ void _server::work_cycle()
                monitoringSocket->save();
            }
        }
+       stop();
 }
 
 void _server::collect_all_received_answers(int &total_received_answers)
@@ -339,9 +348,13 @@ void _server::showClients()
     QMutex mutex;
     mutex.lock();
     monitoring->getClientsArray();
+    configuratorItems.clear();
     emit graphicsClear();
     for(int i=0;i<disp->nclients;i++)
     {
+        char tmp[STR_SIZE];
+        itoa(disp->table[i].worker_addr,tmp,10);
+        configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
         emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
     }
     for(int i=0;i<monitoring->arbitersListCount;i++)
@@ -520,6 +533,7 @@ void MultiThreadServerPart::run()
 void MultiThreadServerPart::init(_server *server)
 {
     this->server=server;
+    global_quit=false;
 }
 
 void MultiThreadServerPart::checkForNewClients()
@@ -535,7 +549,7 @@ void MultiThreadServerPart::checkForNewClients()
     //Проверяем подключение нового клиента
     //Очищаем readfds
     bool quit=false;
-    while(1)
+    while(!global_quit)
     {
         FD_ZERO(&readfds);
         //Заносим дескриптор сокета в readfds
@@ -561,10 +575,6 @@ void MultiThreadServerPart::checkForNewClients()
                     //sprintf(srv_resp,"%d",idclient);
                     send(clientSocket, srv_resp, STR_SIZE, 0);
                     server->disp->addWorker(server->idclient,clientSocket);
-                    char tmp[STR_SIZE];
-                    itoa(server->idclient,tmp,10);
-                    server->configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
-                    emit server->paintConfigurator();
                     server->idclient++;
                     showClients();
                     mutex.unlock();
@@ -581,10 +591,15 @@ void MultiThreadServerPart::showClients()
     mutex.lock();
     server->monitoring->getClientsArray();
     emit graphicsClear();
+    server->configuratorItems.clear();
     for(int i=0;i<server->disp->nclients;i++)
     {
+        char tmp[STR_SIZE];
+        itoa(server->disp->table[i].worker_addr,tmp,10);
+        server->configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
         emit showClientSignal(server->monitoring->clientsList[i].position_x,server->monitoring->clientsList[i].position_y,server->monitoring->clientsList[i].worker_addr);
     }
+    emit server->paintConfigurator();
     for(int i=0;i<server->monitoring->arbitersListCount;i++)
     {
         if(server->monitoringSocket->isVisibleArbiter(server->monitoring->arbitersList[i].arbiter_id))
@@ -607,5 +622,10 @@ void MultiThreadServerPart::showClients()
         }
     }
     mutex.unlock();
+}
+
+void MultiThreadServerPart::globalQuit()
+{
+    global_quit=true;
 }
 

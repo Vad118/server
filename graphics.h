@@ -36,6 +36,7 @@ public slots:
     void paintArbiter(int x, int y, int client_x, int client_y, char* text);
     void paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, char* text, int type);
     void clear();
+    void showClientDisconnectedError();
 };
 
 #endif // GRAPHICS_H

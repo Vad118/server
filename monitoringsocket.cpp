@@ -311,6 +311,7 @@ void MonitoringSocket::loadFile()
 void MonitoringCheckNewMultithread::init(MonitoringSocket *monitoringSocket)
 {
     this->monitoringSocketObj=monitoringSocket;
+    global_quit=false;
 }
 
 void MonitoringCheckNewMultithread::run()
@@ -323,7 +324,7 @@ void MonitoringCheckNewMultithread::run()
     //+++++++++++++++++++++++++++++++
     //Проверяем подключение нового клиента
     //Очищаем readfds
-    while(1)
+    while(!global_quit)
     {
         FD_ZERO(&readfds);
         //Заносим дескриптор сокета в readfds
@@ -354,6 +355,11 @@ void MonitoringCheckNewMultithread::run()
             }
         }
     }
+}
+
+void MonitoringCheckNewMultithread::globalQuit()
+{
+    global_quit=true;
 }
 
 //------------------------------------------------------

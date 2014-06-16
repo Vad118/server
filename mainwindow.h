@@ -41,8 +41,6 @@ private slots:
 
     void on_MainWindow_destroyed();
 
-    void on_pushButton_7_clicked();
-
     void on_treeWidget_itemClicked(QTreeWidgetItem *item, int column);
 
     void on_pushButton_5_clicked();
