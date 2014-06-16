@@ -44,6 +44,7 @@ public:
     dispatcher *disp;
     QList<QTreeWidgetItem *> configuratorItems;
     bool serverGlobalQuit;
+    bool paused;
     string file_script;
 
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);

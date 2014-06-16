@@ -7,6 +7,7 @@ _server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, 
     this->disp=disp;
     this->monitoringSocket=monitoringSocket;
     serverGlobalQuit=false;
+    paused=false;
     //checkNewClientsObject=NULL;
     monitoringCheckNewMultithread=NULL;
 }
@@ -276,61 +277,64 @@ void _server::work_cycle()
            //checkForNewClients();
           checkForNewClients();
           monitoringCheckNewMultithread->check();
-           //+++++++++
-           //Читаем текущих клиентов
-          bool saving=false;
-           for(int i=0;i<getTotalClients();i++)
-           {
-               received_answer=receiveMessage(i);
-               if(monitoringSocket->monitoringType>=1 && received_answer.command!=9)
-                    monitoringSocket->getMonitoringMessage();
-               if(received_answer.command!=-1)
+          if(!paused)
+          {
+              //+++++++++
+               //Читаем текущих клиентов
+              bool saving=false;
+               for(int i=0;i<getTotalClients();i++)
                {
-                   switch(received_answer.command)
+                   received_answer=receiveMessage(i);
+                   if(monitoringSocket->monitoringType>=1 && received_answer.command!=9)
+                        monitoringSocket->getMonitoringMessage();
+                   if(received_answer.command!=-1)
                    {
-                       case 4:
-                           showAnswer(received_answer,false);
-                           break;
-                       case 5:
-                           showAnswer(received_answer,true);
-                           finished=true;
-                           break;
-                       case 10:
-                           clientDisconnected(i);
-                           finished=true;
-                           emit showClientDisconnectedError();
-                           break;
-                       default:
-                           answer=processMessage(received_answer);
-                           // Если добавление - перерисовываем картинку
-                           if(monitoringSocket->monitoringType==0)
-                           {
-                               strcpy(monitoringSocket->visible_arbiters[monitoringSocket->total_visible_arbiters],received_answer.arbiter_id);
-                               monitoringSocket->total_visible_arbiters++;
-                           }
-                           showClients();
-                           if(answer.worker_id!=-1)
-                           {
-                               if(received_answer.command!=9)
-                                   sendMessage(answer.worker_id,answer);
-                               if(monitoringSocket->monitoringType==4 && received_answer.command==9) // Если сохранение
+                       switch(received_answer.command)
+                       {
+                           case 4:
+                               showAnswer(received_answer,false);
+                               break;
+                           case 5:
+                               showAnswer(received_answer,true);
+                               finished=true;
+                               break;
+                           case 10:
+                               clientDisconnected(i);
+                               finished=true;
+                               emit showClientDisconnectedError();
+                               break;
+                           default:
+                               answer=processMessage(received_answer);
+                               // Если добавление - перерисовываем картинку
+                               if(monitoringSocket->monitoringType==0)
                                {
-                                   //monitoringSocket->getMonitoringMessage();
-                                   monitoringSocket->collectActorsAndTheirMessages();
-                                   saving=true;
+                                   strcpy(monitoringSocket->visible_arbiters[monitoringSocket->total_visible_arbiters],received_answer.arbiter_id);
+                                   monitoringSocket->total_visible_arbiters++;
                                }
-                           }
-                           break;
+                               showClients();
+                               if(answer.worker_id!=-1)
+                               {
+                                   if(received_answer.command!=9)
+                                       sendMessage(answer.worker_id,answer);
+                                   if(monitoringSocket->monitoringType==4 && received_answer.command==9) // Если сохранение
+                                   {
+                                       //monitoringSocket->getMonitoringMessage();
+                                       monitoringSocket->collectActorsAndTheirMessages();
+                                       saving=true;
+                                   }
+                               }
+                               break;
+                       }
                    }
                }
-           }
-           if(saving)
-           {
-               // Сохраняем в файл.
+               if(saving)
+               {
+                   // Сохраняем в файл.
 
-               collect_all_received_answers(total_received_answers);
-               monitoringSocket->save();
-           }
+                   collect_all_received_answers(total_received_answers);
+                   monitoringSocket->save(file_script);
+               }
+          }
        }
        stop();
 }
@@ -355,6 +359,7 @@ void _server::collect_all_received_answers(int &total_received_answers)
             count_read++;
         }
     }
+    monitoringSocket->saveSizesStruct.size_all_received_answers=total_received_answers;
 }
 
 void _server::showClients()
@@ -417,7 +422,7 @@ void _server::loadCreateActors()
          int totalUnreadMessages;
     };
      */
-    for(int i=0;i<monitoringSocket->saveActorsStruct[0].totalSaveCount;i++)
+    for(int i=0;i<monitoringSocket->saveSizesStruct.size_saveActorsStruct;i++)
     {
         dispatcher_answer element,answer;
         element.command=1;
@@ -459,7 +464,7 @@ void _server::loadCreateActors()
 void _server::loadInputMessages() // Сообщения которые шли на сервер
 {
     //monitoringSocket->all_received_answers;
-    for(int i=0;i<TOTAL_ARBITERS;i++)
+    for(int i=0;i<monitoringSocket->saveSizesStruct.size_all_received_answers;i++)
     {
         dispatcher_answer element,answer;
         if(monitoringSocket->all_received_answers[i].command==1 ||
@@ -502,7 +507,7 @@ void _server::loadInputMessages() // Сообщения которые шли н
 void _server::loadSendOutputMessages() // Сообщения которые шли с сервера
 {
     //monitoringSocket->clientsMessagesPull;
-    for(int i=0;i<TOTAL_ARBITERS;i++)
+    for(int i=0;i<monitoringSocket->saveSizesStruct.size_clientsMessagesPull;i++)
     {
         dispatcher_answer element,answer;
         if(monitoringSocket->clientsMessagesPull[i].command==1 ||

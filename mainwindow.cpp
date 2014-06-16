@@ -206,10 +206,10 @@ void MainWindow::on_pushButton_3_clicked()  // Сохранение
     monitoringSocketObj->monitoringType=2;
     monitoringSocketObj->getMonitoringMessage(); // Считываем все сообщения мониторинга(очищаем очередь)
     //QString file_script = QFileDialog::getSaveFileName(this, "Save file", "", "");
-    QString file_script="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
-    if(file_script!="")
+    QString file_save="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
+    if(file_save!="")
     {
-        monitoringSocketObj->save_file=file_script.toStdString();
+        monitoringSocketObj->save_file=file_save.toStdString();
         monitoringSocketObj->sendCommand(4);
         monitoringSocketObj->monitoringType=4;
     }
@@ -220,11 +220,12 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
     graphics->clear();
     server->clearArbiters();
     //QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
-    QString file_script="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
-    if(file_script!="")
+    QString file_load="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
+    if(file_load!="")
     {
-        monitoringSocketObj->save_file=file_script.toStdString();
-        monitoringSocketObj->loadFile();
+        monitoringSocketObj->save_file=file_load.toStdString();
+        monitoringSocketObj->loadFile(server->file_script);
+        server->paused=true;
         server->sendScriptToClients(true);
         server->loadCreateActors();
         server->loadSendOutputMessages();
@@ -236,6 +237,7 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
             monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
             monitoringSocketObj->sendCommand(3);      // Первый шаг.
         }
+        server->paused=false;
     }
 }
 

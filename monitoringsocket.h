@@ -39,6 +39,13 @@ struct saveActor
      int totalUnreadMessages;
 };
 
+struct saveSizes
+{
+    int size_saveActorsStruct;
+    int size_clientsMessagesPull;
+    int size_all_received_answers;
+};
+
 // Структура получаемая от клиента при мониторинге/трассировке/сохранении
 struct receiveStruct
 {
@@ -70,6 +77,7 @@ class MonitoringSocket:public QObject
 public:
     int monitoringType;  // Соответствует sendStruct
     string save_file;
+    string script_file;
 
     char visible_arbiters[TOTAL_ARBITERS][10];
     int total_visible_arbiters;
@@ -77,6 +85,7 @@ public:
     saveActor saveActorsStruct[TOTAL_ARBITERS];
     dispatcher_answer clientsMessagesPull[TOTAL_ARBITERS];
     dispatcher_answer all_received_answers[TOTAL_ARBITERS];
+    saveSizes saveSizesStruct;
 
     MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring);
     int initialize();
@@ -89,8 +98,8 @@ public:
     void getMonitoringMessage();
     void draw();
     void collectActorsAndTheirMessages();    // Сбор актеров, функция вызывается для каждого клиента и заполняет saveActorsStruct
-    void save();
-    void loadFile();
+    void save(string file_script);
+    void loadFile(string &file_script);
     bool isVisibleArbiter(char *arbiter_id);
 signals:
     void showClientSignal(int x,int y,char* str);

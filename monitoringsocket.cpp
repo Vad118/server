@@ -5,6 +5,7 @@ MonitoringSocket::MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring)
     disp=disp_par;
     this->monitoring=monitoring;
     save_file="save.txt";
+    script_file=
     total_saved_actors=0;
     total_saved_pull_messages=0;
     total_visible_arbiters=0;
@@ -138,7 +139,6 @@ void MonitoringSocket::getMonitoringMessage()
 
 void MonitoringSocket::collectActorsAndTheirMessages()
 {
-    total_saved_actors;
     for(int i=0;i<disp->nclients;i++)
     {
         bool finish=false;
@@ -220,18 +220,23 @@ void MonitoringSocket::collectActorsAndTheirMessages()
             }
         }
     }
-
-
+    saveSizesStruct.size_saveActorsStruct=total_saved_actors;
+    saveSizesStruct.size_clientsMessagesPull=total_saved_pull_messages;
 }
 
-void MonitoringSocket::save()
+void MonitoringSocket::save(string file_script)
 {
     // Непосредственно сохранение
 
+    char cfile_script[STR_SIZE];
+    strcpy(cfile_script,file_script.c_str());
+
     ofstream f(this->save_file.c_str(),ios::in | ios::binary | ios::trunc);
+    f.write((char *)&saveSizesStruct,sizeof(saveSizesStruct));
     f.write((char *)&all_received_answers,sizeof(all_received_answers));
     f.write((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
     f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+    f.write(cfile_script,sizeof(cfile_script));    // Дописываем имя файла скрипта в конец
     f.close();
 
     /*ofstream f(this->save_file.c_str(),ios::out | ios::binary | ios::app);
@@ -300,13 +305,18 @@ void MonitoringSocket::draw()
 }
 
 
-void MonitoringSocket::loadFile()
+void MonitoringSocket::loadFile(string &file_script)
 {
     // Загрузка файла
+    char cfile_script[STR_SIZE];
+
     ifstream f(this->save_file.c_str(),ios::in | ios::binary);
+    f.read((char *)&saveSizesStruct,sizeof(saveSizesStruct));
     f.read((char *)&all_received_answers,sizeof(all_received_answers));
     f.read((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
     f.read((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+    f.read(cfile_script,sizeof(cfile_script));
+    file_script=cfile_script;
     f.close();
 
     // Отсылаем
