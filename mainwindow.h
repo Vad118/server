@@ -21,10 +21,6 @@ public slots:
 private slots:
     void on_SendButton_clicked();
 
-/*    void on_pushButton_clicked();
-
-    void on_pushButton_3_clicked();*/
-
     void on_checkBox_2_clicked();
 
     void on_pushButton_clicked();
@@ -35,7 +31,7 @@ private slots:
 
     void on_checkBox_clicked();
 
-    void on_pushButton_2_clicked();
+   // void on_pushButton_2_clicked();
 
     void on_action_3_triggered();
 

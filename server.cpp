@@ -272,7 +272,7 @@ void _server::work_cycle()
       bool finished=false;
       dispatcher_answer all_received_answers[TOTAL_ARBITERS];
       int total_received_answers=0;
-      while (!finished && !serverGlobalQuit)
+      while (!serverGlobalQuit)
       {
            //checkForNewClients();
           checkForNewClients();
@@ -296,12 +296,13 @@ void _server::work_cycle()
                                break;
                            case 5:
                                showAnswer(received_answer,true);
-                               finished=true;
+                               //finished=true;
                                break;
                            case 10:
                                clientDisconnected(i);
-                               finished=true;
-                               emit showClientDisconnectedError();
+                               //finished=true;
+
+                               //emit showClientDisconnectedError();
                                break;
                            default:
                                answer=processMessage(received_answer);
@@ -434,31 +435,23 @@ void _server::loadCreateActors()
         }
         element.actor_par_count=monitoringSocket->saveActorsStruct[i].count;
 
-        // Аналогично куску из work_cycle
-        switch(element.command)
+        strcpy(monitoringSocket->visible_arbiters[monitoringSocket->total_visible_arbiters],element.arbiter_id);
+        monitoringSocket->total_visible_arbiters++;
+
+        answer=processMessage(element);
+        // Если добавление - перерисовываем картинку
+        if(element.command==1)
         {
-            case 4:
-                showAnswer(element,false);
-                break;
-            case 5:
-                showAnswer(element,true);
-                break;
-            default:
-                answer=processMessage(element);
-                // Если добавление - перерисовываем картинку
-                if(element.command==1)
-                {
-                     showClients();
-                }
-                if(answer.worker_id!=-1)
-                {
-                    sendMessage(answer.worker_id,answer);
-                    if(monitoringSocket->monitoringType>=1) // Если включен мониторинг - после отправки сообщения обязательно придет ответ на этот сокет
-                        monitoringSocket->getMonitoringMessage();
-                }
-                break;
+            showClients();
+        }
+        if(answer.worker_id!=-1)
+        {
+            sendMessage(answer.worker_id,answer);
         }
     }
+    // Ждем, чтобы на всех клиентах создались актеры (потенциальная дыра, нужно через сообщения сделать)
+    Sleep(1000);
+
 }
 
 void _server::loadInputMessages() // Сообщения которые шли на сервер

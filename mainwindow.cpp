@@ -226,17 +226,18 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
         monitoringSocketObj->save_file=file_load.toStdString();
         monitoringSocketObj->loadFile(server->file_script);
         server->paused=true;
+
+        monitoringSocketObj->sendCommand(0);
+        monitoringSocketObj->monitoringType=0;
+
         server->sendScriptToClients(true);
         server->loadCreateActors();
+
+        setMonitoringType();
+
         server->loadSendOutputMessages();
         server->loadInputMessages();
-        //server->start();
-        setMonitoringType();
-        if(monitoringSocketObj->monitoringType==2)
-        {
-            monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
-            monitoringSocketObj->sendCommand(3);      // Первый шаг.
-        }
+
         server->paused=false;
     }
 }
@@ -268,11 +269,11 @@ void MainWindow::setMonitoringType()
 }
 
 
-void MainWindow::on_pushButton_2_clicked()  // Пауза
+/*void MainWindow::on_pushButton_2_clicked()  // Пауза
 {
     monitoringSocketObj->sendCommand(2);
     monitoringSocketObj->monitoringType=2;
-}
+}*/
 
 void MainWindow::clickExit()
 {
