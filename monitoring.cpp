@@ -99,6 +99,8 @@ void Monitoring::calculateArbiters()
 
 void Monitoring::calculateTraceObjects()
 {
+    int zero_arbiter_x=0;
+    int zero_arbiter_y=25;
     for(int i=0;i<disp->nclients;i++)
     {
         if(traceObjectsList[i].type!=-1)
@@ -107,8 +109,9 @@ void Monitoring::calculateTraceObjects()
             {
                 if(strcmp(traceObjectsList[i].arbiter_id,"-1")==0) // Значит create без арбитра
                 {
-                    traceObjectsList[i].position_x=0;
-                    traceObjectsList[i].position_y=0;
+                    traceObjectsList[i].position_x=zero_arbiter_x;
+                    traceObjectsList[i].position_y=zero_arbiter_y;
+                    zero_arbiter_y+=5;
                 }
                 if(strcmp(traceObjectsList[i].arbiter_id,arbitersList[j].arbiter_id)==0)
                 {

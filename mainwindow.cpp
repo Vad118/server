@@ -107,6 +107,7 @@ void MainWindow::on_SendButton_clicked()  // Запуск
     QString file_script="C:\\QTProjects\\diplom_server\\server\\script.lua";
     if(file_script!="")
     {
+        server->scriptSet=true;
         server->file_script=file_script.toStdString();
         graphics->clear();
         if(server->disp->nclients>0)
@@ -196,6 +197,8 @@ void MainWindow::on_checkBox_2_clicked()
 
 void MainWindow::on_pushButton_clicked() // След.Шаг
 {
+    for(int i=0;i<monitoring->arbitersListCount;i++)
+        monitoring->traceObjectsList[i].type=-1;
     monitoringSocketObj->sendCommand(3);
     monitoringSocketObj->monitoringType=2;
 }
@@ -223,6 +226,7 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
     QString file_load="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
     if(file_load!="")
     {
+        server->scriptSet=true;
         monitoringSocketObj->save_file=file_load.toStdString();
         monitoringSocketObj->loadFile(server->file_script);
         server->paused=true;
@@ -279,7 +283,7 @@ void MainWindow::clickExit()
 {
     server->serverGlobalQuit=true;
     server->stop();
-    monitoringSocketObj->sendCommand(3);
+    monitoringSocketObj->sendCommand(0);
     monitoringSocketObj->stop();
     //multiThreadServPart->wait();
     //monitoringCheckNewMultithread->wait();

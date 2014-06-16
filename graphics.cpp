@@ -95,9 +95,9 @@ void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, cha
     else   // Нет арбитра - когда инициализация
     {
         int message_x=x;
-        int message_y=y+60;
-        int init_x=x;
-        int init_y=y;
+        int message_y=y;
+        int init_x=0;
+        int init_y=20;
 
         PalletScene->addRect(message_x,message_y,CLIENT_RECT_WIDTH*2,CLIENT_RECT_HEIGHT,pen, br);
         QGraphicsTextItem* io2 = new QGraphicsTextItem;
@@ -112,7 +112,7 @@ void _graphics::paintTraceObject(int x, int y, int arbiter_x, int arbiter_y, cha
         io3->setPlainText("createAndInitActors");
         PalletScene->addItem(io3);
 
-        PalletScene->addLine(init_x+CLIENT_RECT_WIDTH/2,init_y+CLIENT_RECT_HEIGHT,message_x+CLIENT_RECT_WIDTH/2,message_y,pen);
+        //PalletScene->addLine(init_x+CLIENT_RECT_WIDTH/2,init_y+CLIENT_RECT_HEIGHT,message_x+CLIENT_RECT_WIDTH/2,message_y,pen);
     }
 }
 

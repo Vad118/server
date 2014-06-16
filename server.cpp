@@ -10,6 +10,7 @@ _server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, 
     paused=false;
     //checkNewClientsObject=NULL;
     monitoringCheckNewMultithread=NULL;
+    scriptSet=false;
 }
 
 _server::~_server()
@@ -265,6 +266,22 @@ void _server::sendScriptToClients(bool loadSaved)
     }
 }
 
+void _server::sendScriptOneClient(int client_id)
+{
+    //Формируем структуру
+    dispatcher_answer answer;
+    answer.command=6;   //Рассылаем скрипт
+    strcpy(answer.script,"");
+    //Забиваем нулями оставшуюся часть структуры, чтобы не передавать мусор
+    answer.actor_par_count=0;
+    strcpy(answer.actor_behavior,"");
+    strcpy(answer.arbiter_id,"");
+
+    answer.worker_id=client_id; //Нужно для создания файла на клиенте
+    sendMessage(client_id,answer);
+    send_file(client_id);
+
+}
 
 void _server::work_cycle()
 {
@@ -573,6 +590,8 @@ void _server::checkForNewClients()
                         disp->addWorker(idclient,clientSocket);
                         idclient++;
                         showClients();
+                        if(scriptSet)
+                            sendScriptOneClient(idclient);
                         mutex.unlock();
                         changed=true;
                     }

@@ -45,6 +45,7 @@ public:
     QList<QTreeWidgetItem *> configuratorItems;
     bool serverGlobalQuit;
     bool paused;
+    bool scriptSet;
     string file_script;
 
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
@@ -61,6 +62,7 @@ public:
     void clearArbiters();
     void showAnswer(dispatcher_answer received_answer, bool final=true);
     void sendScriptToClients(bool loadSaved=false);
+    void sendScriptOneClient(int client_id);
     void work_cycle();
     void showClients();
     void checkForNewClients();
