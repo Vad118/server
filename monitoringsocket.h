@@ -108,6 +108,7 @@ protected:
     void run();
 public:
     void init(MonitoringSocket *monitoringSocket);
+    void check();
 public slots:
     void globalQuit();
 };

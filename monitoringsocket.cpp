@@ -316,6 +316,11 @@ void MonitoringCheckNewMultithread::init(MonitoringSocket *monitoringSocket)
 
 void MonitoringCheckNewMultithread::run()
 {
+    check();
+}
+
+void MonitoringCheckNewMultithread::check()
+{
     //для select
     fd_set readfds;
     struct timeval tv;
@@ -324,8 +329,8 @@ void MonitoringCheckNewMultithread::run()
     //+++++++++++++++++++++++++++++++
     //Проверяем подключение нового клиента
     //Очищаем readfds
-    while(!global_quit)
-    {
+    //while(!global_quit)
+    //{
         FD_ZERO(&readfds);
         //Заносим дескриптор сокета в readfds
         FD_SET(monitoringSocketObj->monitorSocket,&readfds);
@@ -354,7 +359,7 @@ void MonitoringCheckNewMultithread::run()
                 }
             }
         }
-    }
+    //}
 }
 
 void MonitoringCheckNewMultithread::globalQuit()

@@ -56,7 +56,7 @@ private:
     Monitoring *monitoring;
     MonitoringSocket *monitoringSocketObj;
     MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
-    MultiThreadServerPart *multiThreadServPart;
+    //MultiThreadServerPart *multiThreadServPart;
     dispatcher_answer received_answer;
     dispatcher_answer answer;
 

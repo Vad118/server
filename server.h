@@ -23,6 +23,7 @@ using namespace std;
 
 #pragma comment(lib, "Ws2_32.lib")
 
+
 class _server:public QThread
 {
     Q_OBJECT
@@ -37,12 +38,16 @@ private:
 
     void collect_all_received_answers(int &total_received_answers);
 public:
+   // MultiThreadServerPart *checkNewClientsObject;
+    MonitoringCheckNewMultithread *monitoringCheckNewMultithread;
+
     dispatcher *disp;
     QList<QTreeWidgetItem *> configuratorItems;
     bool serverGlobalQuit;
     string file_script;
 
     _server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, MonitoringSocket *monitoringSocket);
+    ~_server();
     int initialize();
     void stop();
     dispatcher_answer receiveMessage(int client_id);
@@ -57,6 +62,7 @@ public:
     void sendScriptToClients(bool loadSaved=false);
     void work_cycle();
     void showClients();
+    void checkForNewClients();
 
     void loadCreateActors();
     void loadSendOutputMessages(); // Сообщения которые шли с сервера
@@ -74,7 +80,7 @@ signals:
 
 };
 
-
+/*
 class MultiThreadServerPart:public QThread
 {
     Q_OBJECT
@@ -95,6 +101,6 @@ signals:
 public slots:
     void globalQuit();
 
-};
+};*/
 
 #endif // SERVER_H

@@ -7,6 +7,20 @@ _server::_server(_graphics *graphics, Monitoring *monitoring, dispatcher *disp, 
     this->disp=disp;
     this->monitoringSocket=monitoringSocket;
     serverGlobalQuit=false;
+    //checkNewClientsObject=NULL;
+    monitoringCheckNewMultithread=NULL;
+}
+
+_server::~_server()
+{
+    delete graphics;
+    delete monitoring;
+    delete disp;
+    delete monitoringSocket;
+    /*if(checkNewClientsObject!=NULL)
+        delete checkNewClientsObject;*/
+    if(monitoringCheckNewMultithread!=NULL)
+        delete monitoringCheckNewMultithread;
 }
 
 int _server::initialize()
@@ -260,6 +274,8 @@ void _server::work_cycle()
       while (!finished && !serverGlobalQuit)
       {
            //checkForNewClients();
+          checkForNewClients();
+          monitoringCheckNewMultithread->check();
            //+++++++++
            //Читаем текущих клиентов
           bool saving=false;
@@ -357,6 +373,7 @@ void _server::showClients()
         configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
         emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
     }
+    emit paintConfigurator();
     for(int i=0;i<monitoring->arbitersListCount;i++)
     {
         if(monitoringSocket->isVisibleArbiter(monitoring->arbitersList[i].arbiter_id))
@@ -519,14 +536,58 @@ void _server::loadSendOutputMessages() // Сообщения которые шл
     }
 }
 
-//---------------------------------------------------------------------------
+void _server::checkForNewClients()
+{
 
+        //для select
+        fd_set readfds;
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+        QMutex mutex;
+        //+++++++++++++++++++++++++++++++
+        //Проверяем подключение нового клиента
+        //Очищаем readfds
+        bool quit=false;
+        //while(!global_quit)
+        //{
+            FD_ZERO(&readfds);
+            //Заносим дескриптор сокета в readfds
+            FD_SET(ServerSocket,&readfds);
+            //Последний параметр - время ожидания. Выставляем нули чтобы
+            //Select не блокировал выполнение программы до смены состояния сокета
+            select(NULL,&readfds,NULL,NULL,&tv);
+            //Если пришли данные на чтение то читаем
+            SOCKET clientSocket;
+            char buf[STR_SIZE];
+            if(FD_ISSET(ServerSocket,&readfds))
+            {
+                if(clientSocket = accept(ServerSocket, 0,0))
+                {
+                    int b=recv(clientSocket,buf,STR_SIZE,0);
+                    if(b!=-1)
+                    {
+                        //ЗДЕСЬ МОЖЕТ БЫТЬ КОПИРОВАНИЕ ip КЛИЕНТА
+                        char srv_resp[STR_SIZE];
+                        mutex.lock();
+                        _itoa(idclient,srv_resp,10);
+                        srv_resp[strlen(srv_resp)]='\0';
+                        //sprintf(srv_resp,"%d",idclient);
+                        send(clientSocket, srv_resp, STR_SIZE, 0);
+                        disp->addWorker(idclient,clientSocket);
+                        idclient++;
+                        showClients();
+                        mutex.unlock();
+                    }
+                }
+            }
+        //}
+}
+
+//---------------------------------------------------------------------------
+/*
 void MultiThreadServerPart::run()
 {
-    /*int x=10;
-    int y=10;
-    char* str="aaa";
-    emit show(x,y,str);*/
     checkForNewClients();
 }
 
@@ -549,8 +610,8 @@ void MultiThreadServerPart::checkForNewClients()
     //Проверяем подключение нового клиента
     //Очищаем readfds
     bool quit=false;
-    while(!global_quit)
-    {
+    //while(!global_quit)
+    //{
         FD_ZERO(&readfds);
         //Заносим дескриптор сокета в readfds
         FD_SET(server->ServerSocket,&readfds);
@@ -581,7 +642,7 @@ void MultiThreadServerPart::checkForNewClients()
                 }
             }
         }
-    }
+    //}
 }
 
 void MultiThreadServerPart::showClients()
@@ -627,5 +688,5 @@ void MultiThreadServerPart::showClients()
 void MultiThreadServerPart::globalQuit()
 {
     global_quit=true;
-}
+}*/
 

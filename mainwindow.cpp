@@ -31,25 +31,27 @@ MainWindow::MainWindow(QWidget *parent) :
 
         monitoring_serv_init();
         main_serv_init();
-        server->start();
 
         // Запуск многопоточных классов
         // Поток 2 - CheckNewClients на основной сокет
-        multiThreadServPart=new MultiThreadServerPart();
+        /*multiThreadServPart=new MultiThreadServerPart();
         multiThreadServPart->init(server);
         QObject::connect(multiThreadServPart, SIGNAL(graphicsClear()), graphics, SLOT(clear()));
         QObject::connect(multiThreadServPart, SIGNAL(showClientSignal(int,int,char*)), graphics, SLOT(paintClient(int,int,char*)));
         QObject::connect(multiThreadServPart, SIGNAL(paintArbiterSignal(int,int,int,int,char*)), graphics, SLOT(paintArbiter(int,int,int,int,char*)));
         QObject::connect(multiThreadServPart, SIGNAL(paintTraceObjectSignal(int,int,int,int,char*,int)), graphics, SLOT(paintTraceObject(int,int,int,int,char*,int)));
         QObject::connect(server, SIGNAL(globalQuit()), multiThreadServPart, SLOT(globalQuit()));
-        multiThreadServPart->start();
+        //multiThreadServPart->start();*/
 
         // Поток 3 - CheckNewClients на второй сокет
         monitoringCheckNewMultithread=new MonitoringCheckNewMultithread();
         monitoringCheckNewMultithread->init(monitoringSocketObj);
         QObject::connect(server, SIGNAL(globalQuit()), monitoringCheckNewMultithread, SLOT(globalQuit()));
-        monitoringCheckNewMultithread->start();
+        //monitoringCheckNewMultithread->start();
+        //server->checkNewClientsObject=multiThreadServPart;
+        server->monitoringCheckNewMultithread=monitoringCheckNewMultithread;
 
+        server->start();
 
     }
 
@@ -200,25 +202,38 @@ void MainWindow::on_pushButton_clicked() // След.Шаг
 
 void MainWindow::on_pushButton_3_clicked()  // Сохранение
 {
-    monitoringSocketObj->sendCommand(4);
-    monitoringSocketObj->monitoringType=4;
+    monitoringSocketObj->sendCommand(2);
+    monitoringSocketObj->monitoringType=2;
+
+    QString file_script = QFileDialog::getSaveFileName(this, "Save file", "", "");
+    if(file_script!="")
+    {
+        monitoringSocketObj->save_file=file_script.toStdString();
+        monitoringSocketObj->sendCommand(4);
+        monitoringSocketObj->monitoringType=4;
+    }
 }
 
 void MainWindow::on_pushButton_4_clicked()  // Загрузка
 {
     graphics->clear();
     server->clearArbiters();
-    monitoringSocketObj->loadFile();
-    server->sendScriptToClients(true);
-    server->loadCreateActors();
-    server->loadSendOutputMessages();
-    server->loadInputMessages();
-    //server->start();
-    setMonitoringType();
-    if(monitoringSocketObj->monitoringType==2)
+    QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    if(file_script!="")
     {
-        monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
-        monitoringSocketObj->sendCommand(3);      // Первый шаг.
+        monitoringSocketObj->save_file=file_script.toStdString();
+        monitoringSocketObj->loadFile();
+        server->sendScriptToClients(true);
+        server->loadCreateActors();
+        server->loadSendOutputMessages();
+        server->loadInputMessages();
+        //server->start();
+        setMonitoringType();
+        if(monitoringSocketObj->monitoringType==2)
+        {
+            monitoringSocketObj->sendCommand(3);      // Пропускаем рассылку скрипта шаг.
+            monitoringSocketObj->sendCommand(3);      // Первый шаг.
+        }
     }
 }
 
@@ -261,8 +276,8 @@ void MainWindow::clickExit()
     server->stop();
     monitoringSocketObj->sendCommand(3);
     monitoringSocketObj->stop();
-    multiThreadServPart->wait();
-    monitoringCheckNewMultithread->wait();
+    //multiThreadServPart->wait();
+    //monitoringCheckNewMultithread->wait();
 }
 
 void MainWindow::on_action_3_triggered()   // Выход
