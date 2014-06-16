@@ -202,10 +202,11 @@ void MainWindow::on_pushButton_clicked() // След.Шаг
 
 void MainWindow::on_pushButton_3_clicked()  // Сохранение
 {
-    monitoringSocketObj->sendCommand(2);
+    monitoringSocketObj->sendCommand(2);      // Останавливаем клиентов
     monitoringSocketObj->monitoringType=2;
-
-    QString file_script = QFileDialog::getSaveFileName(this, "Save file", "", "");
+    monitoringSocketObj->getMonitoringMessage(); // Считываем все сообщения мониторинга(очищаем очередь)
+    //QString file_script = QFileDialog::getSaveFileName(this, "Save file", "", "");
+    QString file_script="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
     if(file_script!="")
     {
         monitoringSocketObj->save_file=file_script.toStdString();
@@ -218,7 +219,8 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
 {
     graphics->clear();
     server->clearArbiters();
-    QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    //QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    QString file_script="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
     if(file_script!="")
     {
         monitoringSocketObj->save_file=file_script.toStdString();
@@ -303,6 +305,9 @@ void MainWindow::paintConfigurator()
     QMutex mutex;
     mutex.lock();
     ui->treeWidget->clear();
+    /*for( int i = ui->treeWidget->topLevelItemCount(); i >= 0; --i ){
+      delete ui->treeWidget->topLevelItem( i );
+    }*/
     ui->treeWidget->addTopLevelItems(server->configuratorItems);
     mutex.unlock();
 }

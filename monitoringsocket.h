@@ -30,10 +30,10 @@ struct sendStruct
 
 struct saveActor
 {
-     char behavior[STR_SIZE];
+     char behavior[100];
      char parameters[5][50];
      int count;
-     char id[STR_SIZE];
+     char id[10];
 
      int totalSaveCount;
      int totalUnreadMessages;

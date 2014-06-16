@@ -318,8 +318,6 @@ void _server::work_cycle()
                                    //monitoringSocket->getMonitoringMessage();
                                    monitoringSocket->collectActorsAndTheirMessages();
                                    saving=true;
-                                   monitoringSocket->all_received_answers[total_received_answers]=received_answer;
-                                   total_received_answers++;
                                }
                            }
                            break;
@@ -373,7 +371,6 @@ void _server::showClients()
         configuratorItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(tmp))));
         emit showClientSignal(monitoring->clientsList[i].position_x,monitoring->clientsList[i].position_y,monitoring->clientsList[i].worker_addr);
     }
-    emit paintConfigurator();
     for(int i=0;i<monitoring->arbitersListCount;i++)
     {
         if(monitoringSocket->isVisibleArbiter(monitoring->arbitersList[i].arbiter_id))
@@ -549,6 +546,7 @@ void _server::checkForNewClients()
         //Проверяем подключение нового клиента
         //Очищаем readfds
         bool quit=false;
+        bool changed=false;
         //while(!global_quit)
         //{
             FD_ZERO(&readfds);
@@ -578,9 +576,12 @@ void _server::checkForNewClients()
                         idclient++;
                         showClients();
                         mutex.unlock();
+                        changed=true;
                     }
                 }
             }
+            if(changed)
+                   emit paintConfigurator();
         //}
 }
 

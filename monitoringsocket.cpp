@@ -82,14 +82,13 @@ receiveStruct MonitoringSocket::receiveMessage(int client_id)
         {
             memcpy( &answer, pBuff, sizeof( receiveStruct));
         }
-        //else //Клиент отключился
-        //{
-        //    answer.command=-1;
-        //    clientDisconnected(client_id);
-        //}
+        else
+        {
+            answer.command=-2;
+        }
     }
-    /*else
-        answer.command=-1;*/
+    else
+        answer.command=-1;
     return answer;
 }
 
@@ -112,19 +111,22 @@ void MonitoringSocket::getMonitoringMessage()
     {
         QMutex mutex;
         mutex.lock();
-        msg=receiveMessage(i);
-        if(msg.command>=0 && msg.command<=100 && strcmp(msg.text,"")!=0)
+        do  // Каждый раз считываем все сообщения пришедшие на этот сокет
         {
-            monitoring->traceObjectsList[i].type=msg.command;
-            strcpy(monitoring->traceObjectsList[i].text,msg.text);
-            strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_parent);
-            if(msg.command==0)
+            msg=receiveMessage(i);
+            if(msg.command>=0 && msg.command<=100 && strcmp(msg.text,"")!=0)
             {
-                strcpy(visible_arbiters[total_visible_arbiters],msg.arbiter_id);
-                total_visible_arbiters++;
+                monitoring->traceObjectsList[i].type=msg.command;
+                strcpy(monitoring->traceObjectsList[i].text,msg.text);
+                strcpy(monitoring->traceObjectsList[i].arbiter_id,msg.arbiter_parent);
+                if(msg.command==0)
+                {
+                    strcpy(visible_arbiters[total_visible_arbiters],msg.arbiter_id);
+                    total_visible_arbiters++;
+                }
+                changed=true;
             }
-            changed=true;
-        }
+        }while(msg.command!=-1);
         mutex.unlock();
     }
     if(changed)
@@ -174,6 +176,8 @@ void MonitoringSocket::collectActorsAndTheirMessages()
                 }
                 delete[] pBuff;
             }
+            else
+                finish=true;
         }
         // Собираем пул сообщений
         count=0;
@@ -211,6 +215,8 @@ void MonitoringSocket::collectActorsAndTheirMessages()
                     }
                     delete[] pBuff;
                 }
+                else
+                    finish=true;
             }
         }
     }
@@ -222,10 +228,11 @@ void MonitoringSocket::save()
 {
     // Непосредственно сохранение
 
-    ofstream f(this->save_file.c_str(),ios::in | ios::binary);
+    ofstream f(this->save_file.c_str(),ios::in | ios::binary | ios::trunc);
     f.write((char *)&all_received_answers,sizeof(all_received_answers));
     f.write((char *)&clientsMessagesPull,sizeof(clientsMessagesPull));
     f.write((char *)&saveActorsStruct,sizeof(saveActorsStruct));
+    f.close();
 
     /*ofstream f(this->save_file.c_str(),ios::out | ios::binary | ios::app);
     f.write((char *)&all_received_answers,sizeof(all_received_answers));
