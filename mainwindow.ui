@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Модель актеров</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTextEdit" name="textEdit">
@@ -211,7 +211,6 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="action"/>
     <addaction name="action_3"/>
    </widget>
    <addaction name="menu"/>

@@ -103,8 +103,8 @@ void MainWindow::main_serv_send()
 
 void MainWindow::on_SendButton_clicked()  // Запуск
 {
-    //QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
-    QString file_script="C:\\QTProjects\\diplom_server\\server\\script.lua";
+    QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    //QString file_script="C:\\QTProjects\\diplom_server\\server\\script.lua";
     if(file_script!="")
     {
         server->scriptSet=true;
@@ -208,8 +208,8 @@ void MainWindow::on_pushButton_3_clicked()  // Сохранение
     monitoringSocketObj->sendCommand(2);      // Останавливаем клиентов
     monitoringSocketObj->monitoringType=2;
     monitoringSocketObj->getMonitoringMessage(); // Считываем все сообщения мониторинга(очищаем очередь)
-    //QString file_script = QFileDialog::getSaveFileName(this, "Save file", "", "");
-    QString file_save="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
+    QString file_save = QFileDialog::getSaveFileName(this, "Save file", "", "");
+    //QString file_save="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
     if(file_save!="")
     {
         monitoringSocketObj->save_file=file_save.toStdString();
@@ -230,8 +230,8 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
 {
     graphics->clear();
     server->clearArbiters();
-    //QString file_script = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
-    QString file_load="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
+    QString file_load = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr(""));
+    //QString file_load="C:\\QTProjects\\diplom_server\\build-server-Desktop_Qt_5_2_1_MinGW_32bit-Debug\\save.txt";
     if(file_load!="")
     {
         server->scriptSet=true;
