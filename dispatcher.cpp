@@ -45,6 +45,10 @@ dispatcher_answer dispatcher::processMessage(dispatcher_answer received_answer)
     {
         answer=sendMessage(received_answer,received_answer.command);
     }
+    else if(received_answer.command==3) //become пересылаемый при включенном мониторинге
+    {
+        answer=sendMessage(received_answer,received_answer.command);
+    }
     else
     {
         //cout<<"nothing";

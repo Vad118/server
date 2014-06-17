@@ -78,6 +78,7 @@ public:
     int monitoringType;  // Соответствует sendStruct
     string save_file;
     string script_file;
+    bool saving_done;
 
     char visible_arbiters[TOTAL_ARBITERS][10];
     int total_visible_arbiters;

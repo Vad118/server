@@ -215,6 +215,14 @@ void MainWindow::on_pushButton_3_clicked()  // Сохранение
         monitoringSocketObj->save_file=file_save.toStdString();
         monitoringSocketObj->sendCommand(4);
         monitoringSocketObj->monitoringType=4;
+        while(!monitoringSocketObj->saving_done)
+        {
+            Sleep(1000);
+        }
+        // Т.к. очереди на сервере и клиентах очистились - восстанавливаем их и продолжаем работу
+        setMonitoringType();
+        server->loadSendOutputMessages();
+        server->loadInputMessages();
     }
 }
 

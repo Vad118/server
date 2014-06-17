@@ -101,6 +101,7 @@ void Monitoring::calculateTraceObjects()
 {
     int zero_arbiter_x=0;
     int zero_arbiter_y=25;
+    int z=30;
     for(int i=0;i<disp->nclients;i++)
     {
         if(traceObjectsList[i].type!=-1)
@@ -116,7 +117,8 @@ void Monitoring::calculateTraceObjects()
                 if(strcmp(traceObjectsList[i].arbiter_id,arbitersList[j].arbiter_id)==0)
                 {
                     traceObjectsList[i].position_x=arbitersList[j].position_x;
-                    traceObjectsList[i].position_y=arbitersList[j].position_y+30;
+                    traceObjectsList[i].position_y=arbitersList[j].position_y+z;
+                    z+=25;
                 }
             }
         }

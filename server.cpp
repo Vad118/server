@@ -213,6 +213,7 @@ void _server::clearArbiters()
         monitoring->traceObjectsList[i].type=-1;
     disp->clearArbiters();
     monitoring->arbitersListCount=0;
+    monitoringSocket->total_visible_arbiters=0;
 }
 
 void _server::showAnswer(dispatcher_answer received_answer, bool final)

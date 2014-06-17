@@ -5,10 +5,10 @@ MonitoringSocket::MonitoringSocket(dispatcher *disp_par, Monitoring *monitoring)
     disp=disp_par;
     this->monitoring=monitoring;
     save_file="save.txt";
-    script_file=
     total_saved_actors=0;
     total_saved_pull_messages=0;
     total_visible_arbiters=0;
+    saving_done=false;
 }
 
 int MonitoringSocket::initialize()
@@ -145,6 +145,7 @@ void MonitoringSocket::collectActorsAndTheirMessages()
         int count=0;
         // Собираем актеров
         int count_client_messages=0;
+        Sleep(1000);
         while(!finish)
         {
             fd_set readfds;
@@ -239,6 +240,7 @@ void MonitoringSocket::save(string file_script)
     f.write(cfile_script,sizeof(cfile_script));    // Дописываем имя файла скрипта в конец
     f.close();
 
+    saving_done=true;
     /*ofstream f(this->save_file.c_str(),ios::out | ios::binary | ios::app);
     f.write((char *)&all_received_answers,sizeof(all_received_answers));
     f.close();
