@@ -78,7 +78,7 @@ receiveStruct MonitoringSocket::receiveMessage(int client_id)
     {
         int bytes_recv;
         //Если клиент не отключился и мы получили сообщение
-        char pBuff[STR_SIZE];
+        char pBuff[1024];
         if((bytes_recv=recv(clientSocket,pBuff,sizeof( receiveStruct),0)) &&(bytes_recv!=SOCKET_ERROR) && (bytes_recv!=-1))
         {
             memcpy( &answer, pBuff, sizeof( receiveStruct));
