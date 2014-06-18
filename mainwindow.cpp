@@ -220,6 +220,11 @@ void MainWindow::on_pushButton_3_clicked()  // Сохранение
             Sleep(1000);
         }
         // Т.к. очереди на сервере и клиентах очистились - восстанавливаем их и продолжаем работу
+        server->clearArbiters();
+        monitoringSocketObj->sendCommand(0);
+        monitoringSocketObj->monitoringType=0;
+        server->loadCreateActors();
+        Sleep(1000);
         setMonitoringType();
         server->loadSendOutputMessages();
         server->loadInputMessages();
@@ -244,7 +249,7 @@ void MainWindow::on_pushButton_4_clicked()  // Загрузка
 
         server->sendScriptToClients(true);
         server->loadCreateActors();
-
+        Sleep(1000);
         setMonitoringType();
 
         server->loadSendOutputMessages();
